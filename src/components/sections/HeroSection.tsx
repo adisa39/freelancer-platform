@@ -35,12 +35,12 @@ export default function HeroSection() {
             {/* Headline */}
             <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, lineHeight: 1.1, marginBottom: 24 }}>
               <span style={{ display: 'block', fontSize: 'clamp(2.2rem, 5.5vw, 4rem)', color: 'var(--text-primary)' }}>Hire Top</span>
-              <span style={{ display: 'block', fontSize: 'clamp(2.2rem, 5.5vw, 4rem)' }} className="shimmer-text">Pioneers.</span>
+              <span style={{ display: 'block', fontSize: 'clamp(2.2rem, 5.5vw, 4rem)' }} className="shimmer-text">Linkers.</span>
               <span style={{ display: 'block', fontSize: 'clamp(2.2rem, 5.5vw, 4rem)', color: 'var(--text-primary)' }}>Get Hired.</span>
             </h1>
 
             <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 36, maxWidth: 520 }}>
-              Post any job, find skilled Pioneers, and pay securely with milestone-based escrow. From development to design, marketing to engineering — every skill, one platform.
+              Post a job, find skilled Linkers, and pay securely with ITL milestones. From development to design, marketing to engineering — every skill, one marketplace.
             </p>
 
             {/* CTAs */}

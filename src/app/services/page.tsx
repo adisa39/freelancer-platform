@@ -40,7 +40,7 @@ export default function ServicesPage() {
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem,5vw,3rem)', color: 'var(--text-primary)', lineHeight: 1.15, marginBottom: 14 }}>
             Translation Services <span style={{ background: 'linear-gradient(135deg,var(--sand),var(--accent-bright))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Tailored for You</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: 520, margin: '0 auto 32px' }}>Every speciality covered — post a job, get matched with an expert Pioneer, and pay securely via escrow.</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: 520, margin: '0 auto 32px' }}>Every speciality covered — post a job, choose a skilled Linker, and agree on clear project terms.</p>
           <Link href="/post-job" className="btn-primary" style={{ fontSize: '.95rem' }}>Post a Translation Job <ArrowRight size={15} /></Link>
         </div>
       </section>

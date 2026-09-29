@@ -1,102 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import { UserModel } from '@/lib/models';
+import { env } from '@/lib/env';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bfblessy_secret_change_in_prod';
+const JWT_SECRET = env.JWT_SECRET || 'bfblessy_secret_change_in_prod';
+const INTERLINK_APP_ID = env.INTERLINK_APP_ID || env.NEXT_PUBLIC_INTERLINK_APP_ID;
+const INTERLINK_API = 'https://interlink-mini-app.interlinklabs.ai/api/tracking';
 
 export async function POST(req: NextRequest) {
   try {
-    await connectDB();
     const body = await req.json();
-    const { action } = body;
-
-    // ── Register ──────────────────────────────────────────────────────────────
-    if (action === 'register') {
-      const { name, email, password, phone, role, location, bio, skills } = body;
-
-      if (!name || !email || !password) {
-        return NextResponse.json({ success: false, message: 'Name, email and password are required.' }, { status: 400 });
-      }
-      if (password.length < 8) {
-        return NextResponse.json({ success: false, message: 'Password must be at least 8 characters.' }, { status: 400 });
-      }
-
-      const existing = await UserModel.findOne({ email: email.toLowerCase() });
-      if (existing) {
-        return NextResponse.json({ success: false, message: 'Email already registered.' }, { status: 409 });
-      }
-
-      const safeRole = role === 'translator' ? 'translator' : 'client';
-      const user = await UserModel.create({
-        name, email: email.toLowerCase(), password, phone, role: safeRole, location,
-        bio: safeRole === 'translator' ? String(bio || '').slice(0, 2000) : undefined,
-        skills: safeRole === 'translator' && Array.isArray(skills) ? skills.map(String).slice(0, 20) : [],
-      });
-      const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-
-      const userObj = user.toObject();
-      delete (userObj as any).password;
-
-      const res = NextResponse.json({ success: true, message: 'Account created successfully.', data: { user: userObj, token } }, { status: 201 });
-      res.cookies.set('bf_token', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, path: '/', sameSite: 'lax' });
-      return res;
-    }
-
-    // ── Login ─────────────────────────────────────────────────────────────────
-    if (action === 'login') {
-      const { email, password } = body;
-
-      if (!email || !password) {
-        return NextResponse.json({ success: false, message: 'Email and password are required.' }, { status: 400 });
-      }
-
-      const user = await UserModel.findOne({ email: email.toLowerCase() }).select('+password');
-      if (!user || !user.isActive) {
-        return NextResponse.json({ success: false, message: 'Invalid credentials.' }, { status: 401 });
-      }
-
-      const valid = await user.comparePassword(password);
-      if (!valid) {
-        return NextResponse.json({ success: false, message: 'Invalid credentials.' }, { status: 401 });
-      }
-
-      const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-      const userObj = user.toObject();
-      delete (userObj as any).password;
-
-      const res = NextResponse.json({ success: true, message: 'Logged in successfully.', data: { user: userObj, token } });
-      res.cookies.set('bf_token', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, path: '/', sameSite: 'lax' });
-      return res;
-    }
-
-    // ── Logout ────────────────────────────────────────────────────────────────
-    if (action === 'logout') {
-      const res = NextResponse.json({ success: true, message: 'Logged out.' });
+    if (body.action === 'logout') {
+      const res = NextResponse.json({ success: true, message: 'Signed out.' });
       res.cookies.delete('bf_token');
       return res;
     }
 
-    return NextResponse.json({ success: false, message: 'Invalid action.' }, { status: 400 });
+    if (body.action !== 'interlink') return NextResponse.json({ success: false, message: 'Use InterLink ID to sign in.' }, { status: 400 });
+    if (body.flow !== 'login' && body.flow !== 'register') return NextResponse.json({ success: false, message: 'Choose sign-in or profile creation to continue.' }, { status: 400 });
+    if (!INTERLINK_APP_ID) return NextResponse.json({ success: false, message: 'InterLink App ID is not configured on the server.' }, { status: 503 });
+    if (typeof body.webToken !== 'string' || body.webToken.length > 12000) return NextResponse.json({ success: false, message: 'InterLink did not provide a valid sign-in token.' }, { status: 400 });
+
+    // Verify the web token directly with InterLink before creating our own app session.
+    const verification = await fetch(`${INTERLINK_API}/validate-app-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: body.webToken, appId: INTERLINK_APP_ID }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!verification.ok) return NextResponse.json({ success: false, message: 'InterLink could not verify this sign-in.' }, { status: 401 });
+    const verified = await verification.json();
+    const identity = verified?.data?.payload;
+    if (!verified?.success || !verified?.data?.valid || !identity?.loginId || (identity.appId && identity.appId !== INTERLINK_APP_ID)) {
+      return NextResponse.json({ success: false, message: 'InterLink could not verify this sign-in.' }, { status: 401 });
+    }
+
+    await connectDB();
+    let user = await UserModel.findOne({ interlinkLoginId: String(identity.loginId), isActive: true });
+    if (!user) {
+      if (body.flow === 'login') return NextResponse.json({ success: false, message: 'No Linker Marketplace profile is connected to this InterLink ID yet. Create your profile first.' }, { status: 404 });
+      const profile = body.profile || {};
+      const role = body.role === 'freelancer' ? 'freelancer' : 'client';
+      const safeName = typeof profile.name === 'string' ? profile.name.trim().slice(0, 100) : '';
+      
+      const userNameResponse = await fetch(`${INTERLINK_API}/profile/${encodeURIComponent(String(identity.loginId))}`, {
+        cache: 'no-store', signal: AbortSignal.timeout(8000),
+      }).catch(() => null);
+      
+      const profileData = userNameResponse?.ok ? await userNameResponse.json().catch(() => null) : null;
+      const verifiedName = profileData?.data?.username;
+      const name = safeName || (typeof verifiedName === 'string' ? verifiedName.slice(0, 100) : '') || `Linker ${String(identity.loginId).slice(0, 8)}`;
+      
+      const skills = role === 'freelancer' && Array.isArray(profile.skills)
+        ? profile.skills.filter((value: unknown): value is string => typeof value === 'string').map((value: string) => value.trim().slice(0, 60)).filter(Boolean).slice(0, 20)
+        : [];
+
+      user = await UserModel.create({
+        name,
+        // Keep legacy unique-email indexes safe during the migration; this is never shown as a contact email.
+        email: `itl-${createHash('sha256').update(String(identity.loginId)).digest('hex')}@identity.invalid`,
+        interlinkLoginId: String(identity.loginId),
+        role,
+        location: typeof profile.location === 'string' ? profile.location.trim().slice(0, 120) : undefined,
+        bio: role === 'freelancer' && typeof profile.bio === 'string' ? profile.bio.trim().slice(0, 2000) : undefined,
+        skills,
+        isActive: true,
+      });
+    }
+
+    const token = jwt.sign({ id: user._id.toString(), role: user.role, loginId: user.interlinkLoginId }, JWT_SECRET, { expiresIn: '7d' });
+    const userObject = user.toObject();
+    delete userObject.password;
+    const res = NextResponse.json({ success: true, data: { user: userObject } });
+
+    res.cookies.set('bf_token', token, {
+      httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, path: '/',
+    });
+
+    return res;
   } catch (error) {
-    console.error('[AUTH ERROR]', error);
-    return NextResponse.json({ success: false, message: 'Internal server error.' }, { status: 500 });
+    console.error('[INTERLINK AUTH]', error);
+    return NextResponse.json({ success: false, message: 'Could not complete InterLink sign-in. Please try again.' }, { status: 500 });
   }
 }
 
-// ── GET current user ──────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('bf_token')?.value;
     if (!token) return NextResponse.json({ success: false, message: 'Not authenticated.' }, { status: 401 });
-
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
     await connectDB();
-    const user = await UserModel.findById(decoded.id).select('-password');
-    if (!user) return NextResponse.json({ success: false, message: 'User not found.' }, { status: 404 });
-
+    const user = await UserModel.findById(decoded.id).select('-password -email');
+    if (!user || !user.isActive) return NextResponse.json({ success: false, message: 'Account not found.' }, { status: 404 });
     return NextResponse.json({ success: true, data: { user } });
   } catch {
-    return NextResponse.json({ success: false, message: 'Invalid token.' }, { status: 401 });
+    return NextResponse.json({ success: false, message: 'Invalid session.' }, { status: 401 });
   }
 }

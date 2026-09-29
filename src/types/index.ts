@@ -1,6 +1,6 @@
-// ── Pioneer Platform Types (aligned to Express backend) ──────────────────────
+// ── Linker Marketplace Types ──────────────────────────────────────────────────
 
-export type UserRole = 'pioneer' | 'client' | 'admin';
+export type UserRole = 'freelancer' | 'client' | 'admin';
 export type SkillLevel = 'beginner' | 'intermediate' | 'expert';
 export type JobType = 'full_time' | 'part_time' | 'contract' | 'freelance' | 'project';
 export type JobStatus = 'open' | 'in_progress' | 'completed' | 'cancelled' | 'paused';
@@ -12,7 +12,7 @@ export type MilestoneStatus = 'pending' | 'in_progress' | 'submitted' | 'approve
 export interface User {
   _id: string;
   name: string;
-  email: string;
+  email?: string;
   role: UserRole;
   avatar?: string;
   bio?: string;
@@ -57,7 +57,7 @@ export interface Job {
   deadline?: string;
   applicationsCount: number;
   isInviteOnly: boolean;
-  invitedPioneers: string[];
+  invitedLinkers: string[];
   createdAt: string;
 }
 

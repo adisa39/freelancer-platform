@@ -6,7 +6,7 @@ import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 const LINKS = {
   Platform: [
     { label: 'Find Jobs',       href: '/jobs'       },
-    { label: 'Browse Pioneers', href: '/pioneers'   },
+    { label: 'Browse Linkers',  href: '/linkers'    },
     { label: 'Post a Job',      href: '/post-job'   },
     { label: 'Services',        href: '/services'   },
     { label: 'Dashboard',       href: '/dashboard'  },
@@ -42,11 +42,11 @@ export default function Footer() {
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>
                   <span style={{ color: 'var(--sand)' }}>BF</span>{' '}<span style={{ color: 'var(--accent-bright)' }}>Blessy</span>
                 </div>
-                <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Pioneer Platform</div>
+                <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Linker Marketplace</div>
               </div>
             </Link>
             <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 18 }}>
-              Africa's leading freelance marketplace. Connecting skilled Pioneers with opportunities across all industries.
+              Connecting skilled Linkers with paid opportunities across every industry.
             </p>
             {[
               { icon: Mail, t: 'info@bfblessy.com', h: 'mailto:info@bfblessy.com' },
@@ -78,7 +78,7 @@ export default function Footer() {
 
         <div style={{ borderTop: '1.5px solid var(--border)', paddingTop: 22, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            © {new Date().getFullYear()} BF Blessy Pioneer Platform. All rights reserved.
+            © {new Date().getFullYear()} BF Blessy Linker Marketplace. All rights reserved.
           </p>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
             Tunatafsiri kwa ubora — We deliver with quality.

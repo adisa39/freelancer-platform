@@ -3,11 +3,12 @@ import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import InterlinkSessionBridge from '@/components/auth/InterlinkSessionBridge';
 
 export const metadata: Metadata = {
-  title: 'BF Blessy — Pioneer Platform | Hire Skilled Professionals',
-  description: 'Africa\'s leading freelance job marketplace. Post jobs, hire Pioneers, and pay securely with milestone-based escrow. Development, Design, Writing, Marketing and more.',
-  keywords: ['freelance', 'jobs', 'Africa', 'hire', 'pioneer', 'marketplace', 'remote work'],
+  title: 'BF Blessy — Linker Marketplace',
+  description: 'Find skilled Linkers, post projects, review proposals, and hire with InterLink ID.',
+  keywords: ['freelance', 'jobs', 'Africa', 'Linkers', 'marketplace', 'InterLink ID'],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body>
         <ThemeProvider>
+          <InterlinkSessionBridge />
           <Navbar />
           <main style={{ minHeight: '100vh' }}>{children}</main>
           <Footer />

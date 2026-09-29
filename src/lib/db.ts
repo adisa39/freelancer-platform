@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import { env } from './env';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bfblessy';
+const MONGODB_URI = env.MONGODB_URI || 'mongodb://localhost:27017/bfblessy';
 
 interface CachedConnection {
   conn: typeof mongoose | null;

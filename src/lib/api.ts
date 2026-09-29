@@ -18,23 +18,12 @@ async function req<T>(endpoint: string, opts: RequestInit = {}): Promise<T> {
 }
 
 type ApiResponse<T> = { success: boolean; message?: string; data: T };
-type AuthData = { user: Record<string, unknown>; token: string };
 
 export const authApi = {
-  register: (b: { name: string; email: string; password: string; phone?: string; role?: string; location?: string; bio?: string; skills?: string[] }) =>
-    req<ApiResponse<AuthData>>('/auth', { method: 'POST', body: JSON.stringify({ ...b, action: 'register' }) }),
-  login: (b: { email: string; password: string }) =>
-    req<ApiResponse<AuthData>>('/auth', { method: 'POST', body: JSON.stringify({ ...b, action: 'login' }) }),
+  interlinkLogin: (body: { webToken: string; role: 'client' | 'freelancer'; profile?: { name?: string; location?: string; bio?: string; skills?: string[] } }) =>
+    req<ApiResponse<{ user: Record<string, unknown> }>>('/auth', { method: 'POST', body: JSON.stringify({ ...body, action: 'interlink' }) }),
   me: () => req<ApiResponse<{ user: Record<string, unknown> }>>('/auth'),
   logout: () => req<ApiResponse<{}>>('/auth', { method: 'POST', body: JSON.stringify({ action: 'logout' }) }),
-};
-
-// Authentication is held in the server-set, HttpOnly bf_token cookie.
-// Kept as a migration shim for existing UI imports; it intentionally stores no token.
-export const tokenHelpers = {
-  set: (_token: string) => undefined,
-  get: () => null,
-  clear: () => undefined,
 };
 
 export const contactApi = {

@@ -1,8 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Briefcase, Users, CheckCircle, DollarSign, Plus, Bell, LogOut, Star, Clock, ArrowRight, Send } from 'lucide-react';
 import { JOB_STATUS_CONFIG, APP_STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from '@/lib/data';
+import { signOutFromInterlink } from '@/lib/interlink-session';
 
 const MOCK_STATS = { postedJobs: { total: 4, active: 2, completed: 9 }, workHistory: { applied: 17, completed: 3 }, reputation: { rating: 4.8, reviews: 12 } };
 const MOCK_JOBS = [
@@ -33,7 +35,9 @@ const NAV = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>('overview');
+  const signOut = async () => { await signOutFromInterlink(); router.replace('/login'); router.refresh(); };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)', paddingTop: 68, display: 'flex', flexDirection: 'column' }}>
@@ -72,7 +76,7 @@ export default function DashboardPage() {
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,var(--accent-dark),var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', color: '#fff' }}>A</div>
               <div><div style={{ fontSize: '.84rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Aisha O.</div><div style={{ fontSize: '.72rem', color: 'var(--text-secondary)' }}>Client</div></div>
             </div>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontSize: '.82rem' }}>
+            <button onClick={signOut} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontSize: '.82rem' }}>
               <LogOut size={13} /> Sign Out
             </button>
           </div>
@@ -207,7 +211,7 @@ export default function DashboardPage() {
               </div>
               <div style={{ marginTop: 18, padding: 14, background: 'rgba(45,125,210,.06)', border: '1px solid rgba(45,125,210,.15)', borderRadius: 12, fontSize: '.8rem', color: 'var(--text-secondary)' }}>
                 <span style={{ color: 'var(--accent-bright)', fontWeight: 600 }}>Escrow flow: </span>
-                Initiate → <span style={{ color: '#F59E0B' }}>In Escrow</span> → Client approves → <span style={{ color: '#4CAF50' }}>Released to Pioneer</span>
+                Initiate → <span style={{ color: '#F59E0B' }}>In Escrow</span> → Client approves → <span style={{ color: '#4CAF50' }}>Released to Linker</span>
               </div>
             </div>
           )}
@@ -231,7 +235,7 @@ export default function DashboardPage() {
                 ))}
                 <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                   <button className="btn-secondary" style={{ flex: 1, justifyContent: 'center', fontSize: '.84rem' }}>Edit Profile</button>
-                  <button style={{ flex: 1, padding: '10px', borderRadius: 8, background: 'rgba(232,76,76,.1)', border: '1px solid rgba(232,76,76,.2)', color: 'var(--red)', cursor: 'pointer', fontSize: '.84rem', fontFamily: 'var(--font-display)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <button onClick={signOut} style={{ flex: 1, padding: '10px', borderRadius: 8, background: 'rgba(232,76,76,.1)', border: '1px solid rgba(232,76,76,.2)', color: 'var(--red)', cursor: 'pointer', fontSize: '.84rem', fontFamily: 'var(--font-display)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                     <LogOut size={13} /> Sign Out
                   </button>
                 </div>

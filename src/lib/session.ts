@@ -7,7 +7,7 @@ export async function getSession() {
   const token = (await cookies()).get('bf_token')?.value;
   if (!token) return null;
   try {
-    return jwt.verify(token, JWT_SECRET) as { id: string; role: string; email: string };
+    return jwt.verify(token, JWT_SECRET) as { id: string; role: string; loginId: string };
   } catch {
     return null;
   }

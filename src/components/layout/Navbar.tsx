@@ -7,7 +7,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 const NAV = [
   { href: '/jobs',      label: 'Find Jobs',    icon: Briefcase },
-  { href: '/pioneers',  label: 'Pioneers',     icon: Users     },
+  { href: '/linkers',   label: 'Linkers',      icon: Users     },
   { href: '/post-job',  label: 'Post a Job',   icon: PlusCircle },
   { href: '/services',  label: 'Services',     icon: null      },
   { href: '/about',     label: 'About',        icon: null      },
@@ -55,7 +55,7 @@ export default function Navbar() {
                 <span style={{ color: 'var(--accent-bright)' }}>Blessy</span>
               </div>
               <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                Pioneer Platform
+                Linker Marketplace
               </div>
             </div>
           </Link>
@@ -78,8 +78,8 @@ export default function Navbar() {
             <Link href="/dashboard" className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <LayoutDashboard size={14} /> Dashboard
             </Link>
-            <Link href="/login" className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Log In</Link>
-            <Link href="/register" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Join Free</Link>
+            <Link href="/login" className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>InterLink ID</Link>
+            <Link href="/register" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Join as Linker</Link>
           </div>
 
           {/* Mobile controls */}
@@ -106,8 +106,8 @@ export default function Navbar() {
               </Link>
             ))}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
-              <Link href="/login" className="btn-secondary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Log In</Link>
-              <Link href="/register" className="btn-primary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Join Free →</Link>
+              <Link href="/login" className="btn-secondary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Sign in with InterLink</Link>
+              <Link href="/register" className="btn-primary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Join as Linker →</Link>
             </div>
           </div>
         </div>

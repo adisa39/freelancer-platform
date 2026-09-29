@@ -1,153 +1,32 @@
-# BF Blessy — Pioneer Platform Frontend
+# BF Blessy Linker Marketplace
 
-**Tunatafsiri kwa ubora** — Africa's Translation Job Marketplace.
+Mobile-first marketplace mini-app built with Next.js 16 App Router. InterLink MDK provides sign-in, while Next.js Route Handlers under `src/app/api` manage the marketplace session and MongoDB-backed job flows.
 
-Full-stack Next.js 16 (App Router) frontend, redesigned and adapted to the **Pioneer Platform** Express/MongoDB backend.
+## Setup
 
----
+1. Copy `.env.local.example` to `.env.local`.
+2. Set `MONGODB_URI`, a strong `JWT_SECRET`, and the App ID registered for this mini-app in both `NEXT_PUBLIC_INTERLINK_APP_ID` and `INTERLINK_APP_ID`.
+3. Install dependencies and run `npm run dev`.
 
-## Architecture
+The sign-in and registration screens use `@interlinklabs/mdk` (`Mdk2`). The browser SDK completes InterLink authentication; the same-origin `/api/auth` handler validates the returned web token with InterLink before setting the marketplace's HttpOnly session cookie. Do not put InterLink access tokens or private credentials in client-side environment variables.
 
-```
-Frontend (Next.js 16)          Backend (Express/Node)
-localhost:3000          ←→     localhost:5000/api
-                               (pioneer-platform package)
-```
+Registration creates a job poster or Linker profile. Linkers can add a display name, location, skills, and bio. The server stores InterLink `loginId` as the account identity; marketplace roles remain `client` and `translator` internally.
 
----
+## Main flows
 
-## Pages & Backend Mapping
+- `/jobs`: open projects backed by the local job API.
+- `/jobs/[id]`: job details and Linker proposals.
+- `/jobs/[id]/applications`: poster review and assignment.
+- `/linkers`: Linker directory; `/linkers/[id]`: public profile.
+- `/post-job`: create a tITL-denominated testnet job.
 
-| Route | Description | Backend API |
-|-------|-------------|-------------|
-| `/` | Homepage — hero, categories, how it works | Static |
-| `/jobs` | Job board with search & filters | `GET /api/jobs` |
-| `/post-job` | Post a new job (client or pioneer) | `POST /api/jobs` |
-| `/pioneers` | Browse pioneer directory | `GET /api/users` |
-| `/services` | Translation service categories | Static |
-| `/about` | Company info, timeline, team | Static |
-| `/contact` | Quote request + message form | `POST /api/quotes` `POST /api/contact` |
-| `/login` | Login with JWT | `POST /api/auth/login` |
-| `/register` | Register as client or pioneer | `POST /api/auth/register` |
-| `/dashboard` | Orders, applications, payments | `GET /api/users/stats` `GET /api/jobs/mine/list` `GET /api/payments/mine` |
+## API routes
 
----
+- `POST /api/auth`: validate an InterLink web token and create a same-origin session; `GET /api/auth` returns the current user; `POST` with `{ "action": "logout" }` clears the local session.
+- `GET, POST /api/jobs`: list and create jobs.
+- `GET /api/jobs/[id]`: retrieve a job; `PATCH` with `action: "assign"` assigns an eligible application.
+- `GET, POST /api/jobs/[id]/applications`: poster review and Linker application submission.
+- `GET /api/freelancers`: list Linkers; `GET /api/freelancers/[id]`: retrieve a public profile.
+- Contact, quote, service, and order handlers are also under `/api`.
 
-## Quick Start
-
-```bash
-# 1. Start the Pioneer Platform backend (port 5000)
-cd ../pioneer-platform
-cp .env.example .env   # set MONGODB_URI + JWT_SECRET
-npm run dev
-
-# 2. Start the Next.js frontend (port 3000)
-cd ../bfblessy
-cp .env.local.example .env.local
-npm install
-npm run dev
-```
-
-`.env.local`:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
-MONGODB_URI=mongodb://localhost:27017/bfblessy
-JWT_SECRET=your_secret_here
-```
-
----
-
-## API Client
-
-All backend calls go through `src/lib/api.ts`:
-
-```ts
-import { authApi, jobsApi, usersApi, applicationsApi, paymentsApi } from '@/lib/api';
-
-// Auth
-const { data } = await authApi.login({ email, password });
-tokenHelpers.set(data.accessToken);
-
-// Jobs board  
-const jobs = await jobsApi.list({ status: 'open', category: 'Legal Translation' });
-
-// Post a job
-await jobsApi.create({ title, description, budget, paymentType, milestones, ... });
-
-// Browse pioneers
-const pioneers = await usersApi.pioneers({ skillLevel: 'expert', skills: 'Swahili' });
-
-// Invite pioneer
-await jobsApi.invite(jobId, pioneerId);
-
-// Apply to job
-await applicationsApi.apply(jobId, { coverLetter, proposedRate, estimatedDuration });
-
-// Payments
-await paymentsApi.initiate(jobId, { amount, milestoneId });
-await paymentsApi.release(paymentId);
-```
-
----
-
-## Token Flow
-
-```
-Register/Login → GET accessToken + refreshToken
-→ Store in localStorage via tokenHelpers.set()
-→ Every API call sends: Authorization: Bearer <token>
-→ Refresh via POST /api/auth/refresh when expired
-```
-
----
-
-## Brand System
-
-Extracted from the BF Blessy logo:
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--sand` | `#C8B882` | "BF" brand, prices, highlights |
-| `--blue` | `#2D7DD2` | "Blessy" brand, CTAs, links |
-| `--blue-bright` | `#3D8FE8` | Hover states, accents |
-| `--green` | `#4CAF50` | Circuit nodes, success, verified |
-| `--black` | `#060A0F` | Page background |
-| `--dark` | `#0C1219` | Section backgrounds |
-
-Fonts: **Sora** (display/headings) + **DM Sans** (body)
-
----
-
-## Pioneer Platform API Reference (backend)
-
-```
-POST   /api/auth/register        Register (pioneer or client)
-POST   /api/auth/login           Login → accessToken + refreshToken
-GET    /api/auth/me              Get current user
-PUT    /api/auth/me              Update profile
-
-GET    /api/jobs                 List jobs (filterable)
-POST   /api/jobs                 Create job
-GET    /api/jobs/:id             Get single job
-PUT    /api/jobs/:id             Update job
-DELETE /api/jobs/:id             Delete job
-PATCH  /api/jobs/:id/status      Update job status
-POST   /api/jobs/:id/invite      Invite a pioneer
-GET    /api/jobs/mine/list       My posted jobs
-
-POST   /api/jobs/:id/applications   Apply to job
-GET    /api/jobs/:id/applications   Get all applicants
-GET    /api/applications/mine       My applications
-PATCH  /api/applications/:id/status Accept/Reject/Withdraw
-
-POST   /api/jobs/:id/payments    Initiate payment (→ escrow)
-PATCH  /api/payments/:id/release Release payment to pioneer
-GET    /api/payments/mine        Payment history
-
-POST   /api/jobs/:id/reviews     Submit review
-GET    /api/users/:id/reviews    Get user reviews
-
-GET    /api/users                Browse pioneers
-GET    /api/users/stats          Dashboard stats
-GET    /api/users/:id            Pioneer public profile
-```
+The current InterLink testnet RPC requires gateway authentication and target-contract allowlisting. On-chain escrow must be configured against an InterLink-approved escrow contract before funding/release actions are enabled.

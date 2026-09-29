@@ -1,4 +1,4 @@
-// ── Pioneer Platform — General Job Marketplace Data ──────────────────────────
+// ── BF Blessy — Linker marketplace data ───────────────────────────────────────
 
 export const JOB_CATEGORIES = [
   { id: 'Development',       icon: '💻', color: '#2D7DD2', desc: 'Web, mobile, backend, APIs' },
@@ -62,7 +62,7 @@ export const PAYMENT_STATUS_CONFIG: Record<string, { label: string; color: strin
 
 export const STATS = [
   { value: '12K+', label: 'Jobs Posted',       icon: '💼' },
-  { value: '8.4K', label: 'Active Pioneers',   icon: '👥' },
+  { value: '8.4K', label: 'Active Linkers',    icon: '👥' },
   { value: '98%',  label: 'Satisfaction Rate', icon: '⭐' },
   { value: '$2M+', label: 'Paid Out',          icon: '💰' },
 ];
@@ -78,7 +78,7 @@ export const TESTIMONIALS = [
   },
   {
     name: 'Chidi Eze',
-    role: 'Senior Pioneer — Full Stack',
+    role: 'Senior Linker — Full Stack',
     text: 'I have completed 28 projects on this platform. The invite-only feature means clients who trust my work come back directly. Best freelance experience in Africa.',
     rating: 5,
     flag: '🇳🇬',
@@ -87,7 +87,7 @@ export const TESTIMONIALS = [
   {
     name: 'Dr. Amara Diallo',
     role: 'Research Lead, Health NGO',
-    text: 'Posted a medical data analysis job and had 12 vetted data scientists apply within a day. The quality filter for verified Pioneers is exceptional.',
+    text: 'Posted a medical data analysis job and had 12 vetted data scientists apply within a day. The quality filter for verified Linkers is exceptional.',
     rating: 5,
     flag: '🇸🇳',
     category: 'Data & AI',
@@ -104,7 +104,7 @@ export const TESTIMONIALS = [
 
 export const HOW_IT_WORKS = [
   { step: '01', title: 'Post Your Job',       desc: 'Describe the work, set your budget, choose payment type (fixed, hourly, or milestone), and go live in minutes.',         icon: '📋', color: 'var(--accent)'  },
-  { step: '02', title: 'Review Pioneers',     desc: 'Pioneers apply with cover letters and rates. Shortlist, message, or invite specific verified Pioneers directly.',         icon: '🔍', color: 'var(--sand)'   },
+  { step: '02', title: 'Review Linkers',       desc: 'Linkers apply with proposals and prices. Compare profiles and assign the person who fits your project.',                  icon: '🔍', color: 'var(--sand)'   },
   { step: '03', title: 'Work & Pay Securely', desc: 'Payment goes into escrow. Release funds milestone-by-milestone or on final delivery — full control, zero risk.',          icon: '🔒', color: 'var(--green)'  },
 ];
 

@@ -2,10 +2,10 @@
 import { Shield, Zap, Globe, Users, DollarSign, Award } from 'lucide-react';
 
 const REASONS = [
-  { icon: Globe,     color: 'var(--accent)',  title: 'Pan-African Network',  desc: 'Pioneers and clients across 40+ African countries and globally. Work across borders, get paid in your currency.' },
+  { icon: Globe,     color: 'var(--accent)',  title: 'Pan-African Network',  desc: 'Linkers and clients work across borders and build trusted relationships throughout Africa and beyond.' },
   { icon: Shield,    color: '#4CAF50',        title: 'Secure Escrow',        desc: 'Every payment is held in escrow. Funds are released only when you approve the work. Zero risk for clients.' },
-  { icon: Zap,       color: 'var(--yellow)',  title: 'Hire in 24 Hours',     desc: 'Post a job and receive qualified Pioneer applications within hours. Our matching surfaces the best candidates first.' },
-  { icon: Users,     color: 'var(--purple)',  title: 'Invite-Only Jobs',     desc: 'Already know a great Pioneer? Use invite-only mode to work exclusively with trusted talent you\'ve vetted.' },
+  { icon: Zap,       color: 'var(--yellow)',  title: 'Hire in 24 Hours',     desc: 'Post a job and review Linker proposals with pricing, delivery estimates, and work profiles.' },
+  { icon: Users,     color: 'var(--purple)',  title: 'Invite-Only Jobs',     desc: 'Already know a great Linker? Invite them to work on a project with you.' },
   { icon: DollarSign,color: 'var(--sand)',    title: 'Flexible Payments',    desc: 'Fixed, hourly, or milestone-based — you define the terms. Release payments on your schedule, not theirs.' },
   { icon: Award,     color: 'var(--red)',     title: 'Verified Ratings',     desc: 'Every review is tied to a completed job. Both parties rate each other — full transparency, no fake reviews.' },
 ];
@@ -15,7 +15,7 @@ export default function WhyUsSection() {
     <section className="section-pad" style={{ background: 'var(--bg-base)' }}>
       <div className="container-brand">
         <div style={{ textAlign: 'center', marginBottom: 52 }}>
-          <span className="section-label">— Why Pioneer Platform —</span>
+          <span className="section-label">— Why BF Blessy —</span>
           <h2 className="section-title" style={{ marginBottom: 14 }}>
             Built for <span className="grad-warm">Africa's Future</span>
           </h2>

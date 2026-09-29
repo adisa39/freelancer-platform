@@ -14,7 +14,7 @@ export default function CTASection() {
           <div>
             <span className="section-label">— Simple Process —</span>
             <h2 className="section-title" style={{ marginBottom: 16 }}>
-              How Pioneer <span className="grad-accent">Platform Works</span>
+              How the <span className="grad-accent">Marketplace Works</span>
             </h2>
             <p className="section-sub" style={{ marginBottom: 36 }}>Three steps from posting to paid. No complexity, no hidden fees.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -60,7 +60,7 @@ export default function CTASection() {
               </Link>
             </div>
 
-            {/* Pioneer card */}
+            {/* Linker card */}
             <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 20, padding: 28 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(200,184,130,0.1)', border: '1.5px solid rgba(200,184,130,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <Users size={20} style={{ color: 'var(--sand)' }} />
@@ -76,8 +76,8 @@ export default function CTASection() {
                   </div>
                 ))}
               </div>
-              <Link href="/register?role=pioneer" className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-                Join as Pioneer
+              <Link href="/register" className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                Join as a Linker
               </Link>
             </div>
           </div>

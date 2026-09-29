@@ -55,7 +55,7 @@ export default function PostJobPage() {
       <div style={{ textAlign: 'center', maxWidth: 440 }}>
         <CheckCircle size={56} style={{ color: 'var(--green)', margin: '0 auto 20px' }} />
         <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.7rem', color: 'var(--text-primary)', marginBottom: 12 }}>Job Posted!</h1>
-        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 28 }}>Your job is now live. Pioneers can browse and apply, or you can invite specific Pioneers directly from their profile page.</p>
+        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 28 }}>Your job is now live. Linkers can browse and apply, or you can invite someone directly from their profile.</p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           <Link href="/dashboard" className="btn-primary">View Dashboard</Link>
           <button onClick={() => setStatus('idle')} className="btn-secondary">Post Another</button>
@@ -69,7 +69,7 @@ export default function PostJobPage() {
       <section style={{ paddingTop: 110, paddingBottom: 36, background: 'var(--bg-surface)', position: 'relative', overflow: 'hidden' }}>
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: .45 }} />
         <div className="container-brand" style={{ position: 'relative', zIndex: 1 }}>
-          <span style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: 10 }}>— Hire a Pioneer —</span>
+          <span style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: 10 }}>— Hire a Linker —</span>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--text-primary)', lineHeight: 1.15 }}>
             Post a <span style={{ background: 'linear-gradient(135deg,var(--sand),var(--accent-bright))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Translation Job</span>
           </h1>
@@ -207,7 +207,7 @@ export default function PostJobPage() {
                   <input type="checkbox" checked={form.isInviteOnly} onChange={e => setForm(f => ({ ...f, isInviteOnly: e.target.checked }))} style={{ marginTop: 2, width: 16, height: 16 }} />
                   <div>
                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '.9rem', color: 'var(--text-primary)', marginBottom: 3 }}>Invite-Only Job</div>
-                    <div style={{ fontSize: '.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>Only Pioneers you explicitly invite can apply. Use this when you already have a trusted translator in mind.</div>
+                    <div style={{ fontSize: '.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>Only Linkers you explicitly invite can apply. Use this when you already have a trusted freelancer in mind.</div>
                   </div>
                 </label>
               </div>
@@ -223,7 +223,7 @@ export default function PostJobPage() {
             <div>
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 22, marginBottom: 16 }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.95rem', color: 'var(--text-primary)', marginBottom: 14 }}>💡 Tips for Great Job Posts</h3>
-                {['Be specific about language pair and dialect','Include word count or page count','Mention subject matter expertise needed','State your preferred deadline clearly','Good payment conditions attract better Pioneers'].map((tip, i) => (
+                {['Be specific about the work and expected outcome','List the skills or experience you need','Describe the deliverables and review process','State your preferred deadline clearly','Clear payment terms attract better Linkers'].map((tip, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                     <span style={{ color: 'var(--accent)', fontSize: '.8rem', marginTop: 1, flexShrink: 0 }}>→</span>
                     <span style={{ fontSize: '.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{tip}</span>
