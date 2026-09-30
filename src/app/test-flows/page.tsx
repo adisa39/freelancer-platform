@@ -114,9 +114,8 @@ export default function HomePage() {
 
     const requestBody = {
       walletAddress: address,
-      chainId: CHAIN_ID
+      chainId: String(CHAIN_ID),
     };
-
     console.log("========== INTERLINK CHALLENGE ==========");
     console.log("REQUEST URL:", url);
     console.log("REQUEST BODY:");
