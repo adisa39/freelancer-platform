@@ -181,25 +181,31 @@ export default function HomePage() {
       data
     );
 
-    const challenge =
-      data?.challenge ??
-      data?.message ??
-      data?.data?.challenge ??
-      data?.data?.message;
+    const challengeId = data?.result?.challengeId;
 
-    if (!challenge) {
+    const messageToSign = data?.result?.messageToSign;
+
+    const expiresAt = data?.result?.expiresAt;
+
+    console.log("Challenge ID:", challengeId);
+    console.log("Message to sign:", messageToSign);
+    console.log("Expires at:", expiresAt);
+
+    if (!challengeId || !messageToSign) {
       throw new Error(
-        "Interlink returned 200 but no challenge was found:\n" +
+        "Interlink returned a successful response, but challengeId or messageToSign is missing:\n" +
           JSON.stringify(data, null, 2)
       );
     }
 
-    setChallenge(challenge);
+    setChallenge(messageToSign);
 
     await signChallenge(
       address,
-      challenge
+      messageToSign,
+      challengeId
     );
+
   } catch (err: any) {
     console.error(
       "========== CHALLENGE ERROR =========="
@@ -227,7 +233,8 @@ export default function HomePage() {
    */
   async function signChallenge(
     address: string,
-    message: string
+    message: string,
+    challengeId: string
   ) {
     try {
       setStep("signing");
@@ -238,32 +245,29 @@ export default function HomePage() {
         throw new Error("Wallet is not available.");
       }
 
-      /*
-       * Personal-sign is used here as an illustrative
-       * EIP-1193 wallet signing call.
-       *
-       * IMPORTANT:
-       * Interlink's PDF says "sign the SIWE challenge",
-       * but does not specify the exact wallet signing method.
-       * Their documentation may require eth_signTypedData_v4
-       * or another SIWE-specific implementation.
-       */
+      console.log("Requesting wallet signature...");
+      console.log("Message:", message);
+
       const signedMessage = await ethereum.request({
         method: "personal_sign",
         params: [message, address],
       });
 
-      console.log("Signature:", signedMessage);
+      console.log("Signature received:", signedMessage);
 
       setSignature(signedMessage);
 
-      await verifySignature(
-        address,
-        message,
-        signedMessage
-      );
+      // await verifySignature(
+      //   address,
+      //   message,
+      //   signedMessage,
+      //   challengeId
+      // );
     } catch (err: any) {
+      console.error("SIGNING ERROR:", err);
+
       setStep("error");
+
       setError(
         err?.message ||
           "Signing failed or the user rejected the wallet request."
