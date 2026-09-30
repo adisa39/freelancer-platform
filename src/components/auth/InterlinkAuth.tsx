@@ -103,13 +103,16 @@ export default function InterlinkAuth({ mode }: Props) {
             </>}
           </div>}
 
-          {!APP_ID ? <div className="config-message" role="status">InterLink sign-in is not configured yet. Set <code>NEXT_PUBLIC_INTERLINK_APP_ID</code> to the App ID registered for this mini-app.</div> : pendingWebToken ? <button type="button" className="interlink-button" disabled={status === 'working'} onClick={() => { started.current = true; void completeSignIn({ webToken: pendingWebToken }); }}>
-            <span className="interlink-symbol">i</span>{status === 'working' ? 'Verifying…' : 'Continue with this InterLink ID'}<ArrowRight size={17} />
-          </button> : <Mdk2 appid={APP_ID} onSuccess={completeSignIn} onFailure={handleFailure}>
-            {({ open }) => <button type="button" className="interlink-button" disabled={status === 'working'} onClick={() => { started.current = true; setStatus('waiting'); setMessage('Waiting for InterLink…'); open(); }}>
-              <span className="interlink-symbol">i</span>{status === 'working' ? 'Verifying…' : status === 'waiting' ? 'Waiting for InterLink…' : 'Continue with InterLink'}<ArrowRight size={17} />
-            </button>}
-          </Mdk2>}
+          {!APP_ID ? 
+            <div className="config-message" role="status">InterLink sign-in is not configured yet. Set <code>NEXT_PUBLIC_INTERLINK_APP_ID</code> to the App ID registered for this mini-app.</div> : pendingWebToken ? <button type="button" className="interlink-button" disabled={status === 'working'} onClick={() => { started.current = true; void completeSignIn({ webToken: pendingWebToken }); }}>
+              <span className="interlink-symbol">i</span>{status === 'working' ? 'Verifying…' : 'Continue with this InterLink ID'}<ArrowRight size={17} />
+            </button> :             
+            <Mdk2 appid={APP_ID} onSuccess={completeSignIn} onFailure={handleFailure}>
+              {({ open }) => <button type="button" className="interlink-button" disabled={status === 'working'} onClick={() => { started.current = true; setStatus('waiting'); setMessage('Waiting for InterLink…'); open(); }}>
+                <span className="interlink-symbol">i</span>{status === 'working' ? 'Verifying…' : status === 'waiting' ? 'Waiting for InterLink…' : 'Continue with InterLink'}<ArrowRight size={17} />
+              </button>}
+            </Mdk2>
+          }
 
           {message && <p className={`feedback ${status === 'error' ? 'error' : ''}`} role={status === 'error' ? 'alert' : 'status'}>{message}</p>}
           <p className="trust-note"><ShieldCheck size={14} /> Your InterLink token is verified on the server. Your marketplace session uses a secure HttpOnly cookie.</p>
