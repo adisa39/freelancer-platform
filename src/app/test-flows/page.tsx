@@ -306,29 +306,26 @@ export default function HomePage() {
    */
   async function verifySignature(
     address: string,
-    message: string, 
+    message: string,
     signedMessage: string,
     challengeId: string
   ) {
     try {
       setStep("verifying");
 
-      const response = await fetch(
-        `${INTERLINK_RPC}/auth/verify`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            walletAddress: address,
-            challengeId,
-            message,
-            signature: signedMessage,
-            chainId: String(CHAIN_ID),
-          }),
-        }
-      );
+      const response = await fetch(`${INTERLINK_RPC}/auth/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          walletAddress: address,
+          challengeId,
+          message,
+          signature: signedMessage,
+          chainId: String(CHAIN_ID),
+        }),
+      });
 
       const rawBody = await response.text();
 
@@ -337,67 +334,48 @@ export default function HomePage() {
       try {
         data = JSON.parse(rawBody);
 
-        console.log(
-          "RESPONSE JSON:"
-        );
-
-        console.log(
-          JSON.stringify(data, null, 2)
-        );
+        console.log("RESPONSE JSON:");
+        console.log(JSON.stringify(data, null, 2));
       } catch {
         data = rawBody;
 
-        console.log(
-          "Response was not JSON."
-        );
+        console.log("Response was not JSON:");
+        console.log(rawBody);
       }
+
+      const info =
+        typeof data === "string"
+          ? data
+          : JSON.stringify(data, null, 2)
 
       if (!response.ok) {
-        let message: string;
-
-        if (typeof data === "string") {
-          message = data;
-        } else {
-          message = JSON.stringify(
-            data,
-            null,
-            2
-          );
-        }
-
         throw new Error(
-          `Signature verification failed: HTTP ${response.status}:\n${message}`
+          `Signature verification failed: HTTP ${response.status}:\n${info}`
         );
       }
-
-      data = await response.json();
 
       console.log("Verify response:", data);
 
-      /*
-       * Again, the PDF does not provide the exact JSON
-       * response schema.
-       */
       const token =
-        data.accessToken ||
-        data.access_token ||
-        data.data?.accessToken ||
-        data.data?.access_token;
+        data?.accessToken ||
+        data?.access_token ||
+        data?.data?.accessToken ||
+        data?.data?.access_token;
 
       if (!token) {
         throw new Error(
-          "Verification succeeded but no access token was found in the response."
+          `Verification succeeded but no access token was found in the response ${response.status}:\n${info}.`
         );
       }
 
       setAccessToken(token);
       setStep("authenticated");
 
-      /*
-       * Immediately test the authenticated RPC.
-       */
+      // Immediately test the authenticated RPC.
       await getBalance(address, token);
     } catch (err: any) {
+      console.error("Signature verification error:", err);
+
       setStep("error");
       setError(
         err?.message || "Signature verification failed."
