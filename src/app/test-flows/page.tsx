@@ -279,7 +279,8 @@ export default function HomePage() {
       await verifySignature(
         address, 
         message, 
-        signature
+        signature,
+        challengeId
       )
     } catch (err: any) {
       console.error(
@@ -306,7 +307,8 @@ export default function HomePage() {
   async function verifySignature(
     address: string,
     message: string, 
-    signedMessage: string
+    signedMessage: string,
+    challengeId: string
   ) {
     try {
       setStep("verifying");
@@ -320,6 +322,7 @@ export default function HomePage() {
           },
           body: JSON.stringify({
             walletAddress: address,
+            challengeId,
             message,
             signature: signedMessage,
             chainId: String(CHAIN_ID),
