@@ -106,118 +106,115 @@ export default function HomePage() {
    * Interlink's actual API response format.
    */
   async function getChallenge(address: string) {
+  try {
+    setStep("challenge");
+    setError("");
+
+    const url = `${INTERLINK_RPC}/auth/challenge`;
+
+    const requestBody = {
+      address,
+    };
+
+    console.log("========== INTERLINK CHALLENGE ==========");
+    console.log("REQUEST URL:", url);
+    console.log("REQUEST BODY:");
+    console.log(
+      JSON.stringify(requestBody, null, 2)
+    );
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    const rawBody = await response.text();
+
+    console.log("RESPONSE STATUS:", response.status);
+    console.log("RESPONSE STATUS TEXT:", response.statusText);
+    console.log("RESPONSE RAW BODY:", rawBody);
+
+    let data: any;
+
     try {
-        setStep("challenge");
-        setError("");
+      data = JSON.parse(rawBody);
 
-        const url = `${INTERLINK_RPC}/auth/challenge`;
+      console.log(
+        "RESPONSE JSON:"
+      );
 
-        const requestBody = {
-        address,
-        };
+      console.log(
+        JSON.stringify(data, null, 2)
+      );
+    } catch {
+      data = rawBody;
 
-        console.log("=== INTERLINK CHALLENGE REQUEST ===");
-        console.log("URL:", url);
-        console.log("Method:", "POST");
-        console.log("Body:", requestBody);
-
-        const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-        body: JSON.stringify(requestBody),
-        });
-
-        /*
-        * Read the body regardless of whether the request succeeded.
-        * This is important because HTTP 400 responses often contain
-        * the actual validation/error message.
-        */
-        const rawBody = await response.text();
-
-        console.log("=== INTERLINK CHALLENGE RESPONSE ===");
-        console.log("HTTP Status:", response.status);
-        console.log("Status Text:", response.statusText);
-        console.log(
-        "Headers:",
-        Object.fromEntries(response.headers.entries())
-        );
-        console.log("Raw Body:", rawBody);
-
-        let data: any = null;
-
-        try {
-        data = rawBody ? JSON.parse(rawBody) : null;
-        } catch {
-        console.log(
-            "Response body is not JSON."
-        );
-        }
-
-        console.log("Parsed Body:", data);
-
-        if (!response.ok) {
-        /*
-        * Try to extract as much useful information as possible.
-        */
-        const serverMessage =
-            data?.message ||
-            data?.error ||
-            data?.error?.message ||
-            data?.detail ||
-            data?.details ||
-            data?.data?.message ||
-            rawBody ||
-            response.statusText;
-
-        throw new Error(
-            `Interlink challenge failed (${response.status}): ${serverMessage}`
-        );
-        }
-
-        /*
-        * Log successful response too.
-        */
-        console.log(
-        "=== CHALLENGE SUCCESS ===",
-        data
-        );
-
-        /*
-        * We still don't know the exact Interlink response schema
-        * from the PDF, so inspect the actual response.
-        */
-        const message =
-        data?.challenge ||
-        data?.message ||
-        data?.data?.challenge ||
-        data?.data?.message;
-
-        if (!message) {
-        throw new Error(
-            `Challenge request succeeded, but no challenge/message was found. Raw response: ${rawBody}`
-        );
-        }
-
-        setChallenge(message);
-
-        await signChallenge(address, message);
-    } catch (err: any) {
-        console.error(
-        "=== CHALLENGE ERROR ===",
-        err
-        );
-
-        setStep("error");
-
-        setError(
-        err?.message ||
-            "Could not obtain Interlink challenge."
-        );
+      console.log(
+        "Response was not JSON."
+      );
     }
+
+    if (!response.ok) {
+      let message: string;
+
+      if (typeof data === "string") {
+        message = data;
+      } else {
+        message = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      }
+
+      throw new Error(
+        `Interlink challenge failed (${response.status}):\n${message}`
+      );
+    }
+
+    console.log(
+      "CHALLENGE SUCCESS:",
+      data
+    );
+
+    const challenge =
+      data?.challenge ??
+      data?.message ??
+      data?.data?.challenge ??
+      data?.data?.message;
+
+    if (!challenge) {
+      throw new Error(
+        "Interlink returned 200 but no challenge was found:\n" +
+          JSON.stringify(data, null, 2)
+      );
+    }
+
+    setChallenge(challenge);
+
+    await signChallenge(
+      address,
+      challenge
+    );
+  } catch (err: any) {
+    console.error(
+      "========== CHALLENGE ERROR =========="
+    );
+
+    console.error(err);
+
+    setStep("error");
+
+    setError(
+      err?.message ||
+        "Could not obtain Interlink challenge."
+    );
   }
+}
 
   /*
    * ---------------------------------------------------------
