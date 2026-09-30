@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ethers } from "ethers";
 
 const INTERLINK_RPC =
   "https://evm-rpc.test-net.interlinklabs.ai/v1";
@@ -238,6 +239,7 @@ export default function HomePage() {
   ) {
     try {
       setStep("signing");
+      setError("");
 
       const ethereum = (window as any).ethereum;
 
@@ -245,32 +247,46 @@ export default function HomePage() {
         throw new Error("Wallet is not available.");
       }
 
-      console.log("Requesting wallet signature...");
+      console.log("=== SIGNING CHALLENGE ===");
+      console.log("Address:", address);
+      console.log("Challenge ID:", challengeId);
       console.log("Message:", message);
 
-      const signedMessage = await ethereum.request({
+      const messageBytes = ethers.toUtf8Bytes(message);
+
+      console.log(
+        "Message bytes:",
+        messageBytes
+      );
+
+      const signature = await ethereum.request({
         method: "personal_sign",
-        params: [message, address],
+        params: [
+          ethers.hexlify(messageBytes),
+          address,
+        ],
       });
 
-      console.log("Signature received:", signedMessage);
+      console.log(
+        "=== SIGNATURE RECEIVED ==="
+      );
+      console.log(signature);
 
-      setSignature(signedMessage);
+      setSignature(signature);
 
-      // await verifySignature(
-      //   address,
-      //   message,
-      //   signedMessage,
-      //   challengeId
-      // );
+      // Don't verify yet.
+      // First confirm signing works.
     } catch (err: any) {
-      console.error("SIGNING ERROR:", err);
+      console.error(
+        "=== WALLET SIGNING ERROR ===",
+        err
+      );
 
       setStep("error");
 
       setError(
         err?.message ||
-          "Signing failed or the user rejected the wallet request."
+          "Wallet signing failed."
       );
     }
   }
