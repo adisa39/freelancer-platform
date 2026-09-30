@@ -276,6 +276,11 @@ export default function HomePage() {
 
       // Don't verify yet.
       // First confirm signing works.
+      await verifySignature(
+        address, 
+        message, 
+        signature
+      )
     } catch (err: any) {
       console.error(
         "=== WALLET SIGNING ERROR ===",
@@ -314,9 +319,10 @@ export default function HomePage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            address,
+            walletAddress: address,
             message,
             signature: signedMessage,
+            chainId: String(CHAIN_ID),
           }),
         }
       );
