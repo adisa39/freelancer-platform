@@ -305,7 +305,7 @@ export default function HomePage() {
    */
   async function verifySignature(
     address: string,
-    message: string,
+    message: string, 
     signedMessage: string
   ) {
     try {
@@ -327,9 +327,23 @@ export default function HomePage() {
         }
       );
 
+      const rawBody = await response.text();
+
       if (!response.ok) {
+        let message: string;
+
+        if (typeof rawBody === "string") {
+          message = rawBody;
+        } else {
+          message = JSON.stringify(
+            rawBody,
+            null,
+            2
+          );
+        }
+
         throw new Error(
-          `Signature verification failed: HTTP ${response.status}`
+          `Signature verification failed: HTTP ${response.status}:\n${message}`
         );
       }
 
