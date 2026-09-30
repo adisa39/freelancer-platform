@@ -279,7 +279,8 @@ export default function HomePage() {
       await verifySignature(
         address, 
         message, 
-        signature
+        signature,
+        challengeId
       )
     } catch (err: any) {
       console.error(
@@ -306,7 +307,8 @@ export default function HomePage() {
   async function verifySignature(
     address: string,
     message: string, 
-    signedMessage: string
+    signedMessage: string,
+    challengeId: string
   ) {
     try {
       setStep("verifying");
@@ -320,6 +322,7 @@ export default function HomePage() {
           },
           body: JSON.stringify({
             walletAddress: address,
+            challengeId,
             message,
             signature: signedMessage,
             chainId: String(CHAIN_ID),
@@ -329,14 +332,34 @@ export default function HomePage() {
 
       const rawBody = await response.text();
 
+      let data: any;
+
+      try {
+        data = JSON.parse(rawBody);
+
+        console.log(
+          "RESPONSE JSON:"
+        );
+
+        console.log(
+          JSON.stringify(data, null, 2)
+        );
+      } catch {
+        data = rawBody;
+
+        console.log(
+          "Response was not JSON."
+        );
+      }
+
       if (!response.ok) {
         let message: string;
 
-        if (typeof rawBody === "string") {
-          message = rawBody;
+        if (typeof data === "string") {
+          message = data;
         } else {
           message = JSON.stringify(
-            rawBody,
+            data,
             null,
             2
           );
@@ -347,7 +370,7 @@ export default function HomePage() {
         );
       }
 
-      const data = await response.json();
+      data = await response.json();
 
       console.log("Verify response:", data);
 
