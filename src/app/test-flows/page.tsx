@@ -113,7 +113,7 @@ export default function HomePage() {
     const url = `${INTERLINK_RPC}/auth/challenge`;
 
     const requestBody = {
-      address,
+      walletAddress: address,
     };
 
     console.log("========== INTERLINK CHALLENGE ==========");
