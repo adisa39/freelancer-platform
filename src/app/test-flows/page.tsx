@@ -356,11 +356,8 @@ export default function HomePage() {
 
       console.log("Verify response:", data);
 
-      const token =
-        data?.accessToken ||
-        data?.access_token ||
-        data?.data?.accessToken ||
-        data?.data?.access_token;
+      const token = data?.result?.accessToken;
+      const refreshToken = data?.result?.refreshToken;
 
       if (!token) {
         throw new Error(
