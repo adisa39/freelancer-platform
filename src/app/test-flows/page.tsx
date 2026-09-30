@@ -107,61 +107,115 @@ export default function HomePage() {
    */
   async function getChallenge(address: string) {
     try {
-      setStep("challenge");
+        setStep("challenge");
+        setError("");
 
-      const response = await fetch(
-        `${INTERLINK_RPC}/auth/challenge`,
-        {
-          method: "POST",
-          headers: {
+        const url = `${INTERLINK_RPC}/auth/challenge`;
+
+        const requestBody = {
+        address,
+        };
+
+        console.log("=== INTERLINK CHALLENGE REQUEST ===");
+        console.log("URL:", url);
+        console.log("Method:", "POST");
+        console.log("Body:", requestBody);
+
+        const response = await fetch(url, {
+        method: "POST",
+        headers: {
             "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            address,
-          }),
+            Accept: "application/json",
+        },
+        body: JSON.stringify(requestBody),
+        });
+
+        /*
+        * Read the body regardless of whether the request succeeded.
+        * This is important because HTTP 400 responses often contain
+        * the actual validation/error message.
+        */
+        const rawBody = await response.text();
+
+        console.log("=== INTERLINK CHALLENGE RESPONSE ===");
+        console.log("HTTP Status:", response.status);
+        console.log("Status Text:", response.statusText);
+        console.log(
+        "Headers:",
+        Object.fromEntries(response.headers.entries())
+        );
+        console.log("Raw Body:", rawBody);
+
+        let data: any = null;
+
+        try {
+        data = rawBody ? JSON.parse(rawBody) : null;
+        } catch {
+        console.log(
+            "Response body is not JSON."
+        );
         }
-      );
 
-      if (!response.ok) {
+        console.log("Parsed Body:", data);
+
+        if (!response.ok) {
+        /*
+        * Try to extract as much useful information as possible.
+        */
+        const serverMessage =
+            data?.message ||
+            data?.error ||
+            data?.error?.message ||
+            data?.detail ||
+            data?.details ||
+            data?.data?.message ||
+            rawBody ||
+            response.statusText;
+
         throw new Error(
-          `Challenge request failed: HTTP ${response.status}`
+            `Interlink challenge failed (${response.status}): ${serverMessage}`
         );
-      }
+        }
 
-      const data = await response.json();
+        /*
+        * Log successful response too.
+        */
+        console.log(
+        "=== CHALLENGE SUCCESS ===",
+        data
+        );
 
-      console.log("Challenge response:", data);
+        /*
+        * We still don't know the exact Interlink response schema
+        * from the PDF, so inspect the actual response.
+        */
+        const message =
+        data?.challenge ||
+        data?.message ||
+        data?.data?.challenge ||
+        data?.data?.message;
 
-      /*
-       * We don't know Interlink's exact response property
-       * from the supplied document.
-       *
-       * Common possibilities are:
-       *
-       * data.challenge
-       * data.message
-       * data.nonce
-       *
-       * Adjust this after checking their API documentation.
-       */
-      const message =
-        data.challenge ||
-        data.message ||
-        data.data?.challenge ||
-        data.data?.message;
-
-      if (!message) {
+        if (!message) {
         throw new Error(
-          "Challenge was returned, but its response format is unknown. Check Interlink API documentation."
+            `Challenge request succeeded, but no challenge/message was found. Raw response: ${rawBody}`
         );
-      }
+        }
 
-      setChallenge(message);
+        setChallenge(message);
 
-      await signChallenge(address, message);
+        await signChallenge(address, message);
     } catch (err: any) {
-      setStep("error");
-      setError(err?.message || "Could not obtain challenge.");
+        console.error(
+        "=== CHALLENGE ERROR ===",
+        err
+        );
+
+        setStep("error");
+
+        setError(
+        err?.message ||
+            "Could not obtain Interlink challenge."
+        );
     }
   }
 
@@ -508,21 +562,35 @@ export default function HomePage() {
           style={{
             marginTop: 30,
             padding: 20,
+            color: "black",
             background: "#ffecec",
             border: "1px solid #ffaaaa",
+            borderRadius: 8,
           }}
         >
-          <strong>Error:</strong>
-          <p>{error}</p>
+            <h3>Interlink Error</h3>
 
-          <button
-            onClick={() => {
-              setError("");
-              setStep("idle");
+            <pre
+            style={{
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
             }}
-          >
+            >
+            {error}
+            </pre>
+
+            <button
+            onClick={() => {
+                setError("");
+                setStep("idle");
+            }}
+            style={{
+                marginTop: 10,
+                padding: "8px 14px",
+            }}
+            >
             Reset
-          </button>
+            </button>
         </section>
       )}
     </main>
