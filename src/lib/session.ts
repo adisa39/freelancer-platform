@@ -1,13 +1,14 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { getJwtSecret } from './env';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bfblessy_secret_change_in_prod';
+export type AppSession = { id: string; role: string; loginId: string };
 
 export async function getSession() {
   const token = (await cookies()).get('bf_token')?.value;
   if (!token) return null;
   try {
-    return jwt.verify(token, JWT_SECRET) as { id: string; role: string; loginId: string };
+    return jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'], issuer: 'bfblessy' }) as AppSession;
   } catch {
     return null;
   }

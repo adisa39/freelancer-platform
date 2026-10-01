@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import { OrderModel } from '@/lib/models';
+import { getJwtSecret } from '@/lib/env';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bfblessy_secret_change_in_prod';
 
 function getUserFromRequest(req: NextRequest): { id: string; role: string } | null {
   try {
     const token = req.cookies.get('bf_token')?.value || req.headers.get('authorization')?.split(' ')[1];
     if (!token) return null;
-    return jwt.verify(token, JWT_SECRET) as { id: string; role: string };
+    return jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'], issuer: 'bfblessy' }) as { id: string; role: string };
   } catch { return null; }
 }
 

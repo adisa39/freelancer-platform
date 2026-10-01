@@ -3,15 +3,15 @@ import { createHash } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import { UserModel } from '@/lib/models';
-import { env } from '@/lib/env';
+import { env, getJwtSecret } from '@/lib/env';
 
-const JWT_SECRET = env.JWT_SECRET || 'bfblessy_secret_change_in_prod';
-const INTERLINK_APP_ID = env.INTERLINK_APP_ID || env.NEXT_PUBLIC_INTERLINK_APP_ID;
+const INTERLINK_APP_ID = env.INTERLINK_APP_ID;
 const INTERLINK_API = 'https://interlink-mini-app.interlinklabs.ai/api/tracking';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') return NextResponse.json({ success: false, message: 'Invalid request body.' }, { status: 400 });
     if (body.action === 'logout') {
       const res = NextResponse.json({ success: true, message: 'Signed out.' });
       res.cookies.delete('bf_token');
@@ -34,12 +34,13 @@ export async function POST(req: NextRequest) {
     if (!verification.ok) return NextResponse.json({ success: false, message: 'InterLink could not verify this sign-in.' }, { status: 401 });
     const verified = await verification.json();
     const identity = verified?.data?.payload;
-    if (!verified?.success || !verified?.data?.valid || !identity?.loginId || (identity.appId && identity.appId !== INTERLINK_APP_ID)) {
+    if (!verified?.success || !verified?.data?.valid || typeof identity?.loginId !== 'string' || !identity.loginId.trim() || (identity.appId && identity.appId !== INTERLINK_APP_ID)) {
       return NextResponse.json({ success: false, message: 'InterLink could not verify this sign-in.' }, { status: 401 });
     }
 
     await connectDB();
-    let user = await UserModel.findOne({ interlinkLoginId: String(identity.loginId), isActive: true });
+    let user = await UserModel.findOne({ interlinkLoginId: identity.loginId });
+    if (user && !user.isActive) return NextResponse.json({ success: false, message: 'This account is disabled. Contact support for help.' }, { status: 403 });
     if (!user) {
       if (body.flow === 'login') return NextResponse.json({ success: false, message: 'No Linker Marketplace profile is connected to this InterLink ID yet. Create your profile first.' }, { status: 404 });
       const profile = body.profile || {};
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
         name,
         // Keep legacy unique-email indexes safe during the migration; this is never shown as a contact email.
         email: `itl-${createHash('sha256').update(String(identity.loginId)).digest('hex')}@identity.invalid`,
-        interlinkLoginId: String(identity.loginId),
+        interlinkLoginId: identity.loginId,
         role,
         location: typeof profile.location === 'string' ? profile.location.trim().slice(0, 120) : undefined,
         bio: role === 'freelancer' && typeof profile.bio === 'string' ? profile.bio.trim().slice(0, 2000) : undefined,
@@ -71,13 +72,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const token = jwt.sign({ id: user._id.toString(), role: user.role, loginId: user.interlinkLoginId }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id.toString(), role: user.role, loginId: user.interlinkLoginId }, getJwtSecret(), { algorithm: 'HS256', expiresIn: '7d', issuer: 'bfblessy' });
     const userObject = user.toObject();
     delete userObject.password;
+    delete userObject.email;
     const res = NextResponse.json({ success: true, data: { user: userObject } });
 
     res.cookies.set('bf_token', token, {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax',
+      httpOnly: true, secure: env.NODE_ENV === 'production', sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, path: '/',
     });
 
@@ -92,7 +94,7 @@ export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('bf_token')?.value;
     if (!token) return NextResponse.json({ success: false, message: 'Not authenticated.' }, { status: 401 });
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const decoded = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'], issuer: 'bfblessy' }) as { id: string };
     await connectDB();
     const user = await UserModel.findById(decoded.id).select('-password -email');
     if (!user || !user.isActive) return NextResponse.json({ success: false, message: 'Account not found.' }, { status: 404 });

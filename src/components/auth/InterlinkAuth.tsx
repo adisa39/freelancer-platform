@@ -54,7 +54,7 @@ export default function InterlinkAuth({ mode }: Props) {
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'InterLink sign-in could not be completed.');
       const accountRole = result.data.user.role;
-      router.replace(mode === 'register' ? (accountRole === 'translator' ? '/jobs' : '/post-job') : '/dashboard');
+      router.replace(mode === 'register' ? (accountRole === 'freelancer' ? '/jobs' : '/post-job') : '/dashboard');
       router.refresh();
     } catch (error) {
       started.current = false;
