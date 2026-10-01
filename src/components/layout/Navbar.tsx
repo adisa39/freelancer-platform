@@ -79,8 +79,8 @@ export default function Navbar() {
             <Link href="/dashboard" className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <LayoutDashboard size={14} /> Dashboard
             </Link>
-            <Link href="/login" className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>InterLink ID</Link>
-            <Link href="/register" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Join as Linker</Link>
+            <Link href="/login" className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Login</Link>
+            <Link href="/register" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Register</Link>
           </div>
 
           {/* Mobile controls */}

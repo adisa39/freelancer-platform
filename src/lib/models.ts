@@ -1,13 +1,12 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import bcrypt from 'bcryptjs';
+import mongoose, { Schema, Document, Types } from 'mongoose';
+import { UserRole } from '@/types/enum';
 
 // ── User Model ────────────────────────────────────────────────────────────────
 export interface IUser extends Document {
   name: string;
   email?: string;
-  password?: string;
-  interlinkLoginId: string;
-  role: 'client' | 'translator' | 'admin';
+  interlinkLoginId?: string;
+  role: UserRole;
   phone?: string;
   company?: string;
   location?: string;
@@ -16,32 +15,172 @@ export interface IUser extends Document {
   skills?: string[];
   isActive: boolean;
   createdAt: Date;
-  comparePassword(candidate: string): Promise<boolean>;
 }
 
-const UserSchema = new Schema<IUser>({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, unique: true, sparse: true, lowercase: true },
-  password: { type: String, select: false },
-  interlinkLoginId: { type: String, unique: true, sparse: true },
-  role: { type: String, enum: ['client', 'translator', 'admin'], default: 'client' },
-  phone: String,
-  company: String,
-  location: String,
-  languages: [String],
-  bio: { type: String, maxlength: 2000 },
-  skills: { type: [String], default: [] },
-  isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+interface IWallet extends Document {
+  user_id: Types.ObjectId;
+  address: string;
+  chain_id: number;
+  provider: 'interlink';
+  is_primary: boolean;
+}
 
-UserSchema.pre('save', async function () {
-  if (!this.isModified('password') || !this.password) return;
-  this.password = await bcrypt.hash(this.password, 12);
+const UserSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      unique: true,
+      sparse: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    interlinkLoginId: { type: String, trim: true, unique: true, sparse: true },
+
+    role: {
+      type: String,
+      enum: UserRole,
+      default: UserRole.CLIENT,
+    },
+
+    phone: String,
+    company: String,
+    location: String,
+    languages: [String],
+
+    bio: {
+      type: String,
+      maxlength: 2000,
+    },
+
+    skills: {
+      type: [String],
+      default: [],
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const WalletSchema = new Schema<IWallet>(
+  {
+    user_id: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    address: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    chain_id: {
+      type: Number,
+      required: true,
+    },
+
+    provider: {
+      type: String,
+      enum: ["interlink"],
+      default: "interlink"
+    },
+
+    is_primary: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+WalletSchema.index(
+  { address: 1, chain_id: 1 },
+  { unique: true }
+);
+
+export interface ISession {
+  user_id: Types.ObjectId;
+
+  identity_id?: Types.ObjectId;
+
+  session_token_hash: string;
+
+  expires_at: Date;
+
+  last_used_at?: Date;
+
+  revoked_at?: Date;
+
+  user_agent?: string;
+
+  ip_address?: string;
+}
+
+const SessionSchema = new Schema<ISession>(
+  {
+    user_id: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    identity_id: {
+      type: Schema.Types.ObjectId,
+      ref: "Identity",
+      index: true,
+    },
+
+    session_token_hash: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    expires_at: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+
+    last_used_at: {
+      type: Date,
+    },
+
+    revoked_at: {
+      type: Date,
+    },
+
+    user_agent: String,
+
+    ip_address: String,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+SessionSchema.index({
+  user_id: 1,
+  revoked_at: 1,
 });
-
-UserSchema.methods.comparePassword = function (candidate: string) {
-  return this.password ? bcrypt.compare(candidate, this.password) : Promise.resolve(false);
-};
 
 // ── Service Model ─────────────────────────────────────────────────────────────
 const ServiceSchema = new Schema({
@@ -116,6 +255,7 @@ const ContactSchema = new Schema({
 
 // ── Export Models ─────────────────────────────────────────────────────────────
 export const UserModel = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export const WalletModel = mongoose.models.Wallet || mongoose.model<IWallet>('Wallet', WalletSchema);
 export const ServiceModel = mongoose.models.Service || mongoose.model('Service', ServiceSchema);
 export const QuoteModel = mongoose.models.Quote || mongoose.model('Quote', QuoteSchema);
 export const OrderModel = mongoose.models.Order || mongoose.model('Order', OrderSchema);
