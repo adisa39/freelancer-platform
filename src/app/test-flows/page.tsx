@@ -18,13 +18,32 @@ type Step =
   | "rpc"
   | "error";
 
+type JsonObject = Record<string, unknown>;
+
+declare global {
+  interface Window {
+    ethereum?: {
+      request(args: { method: string; params?: unknown[] }): Promise<unknown>;
+    };
+  }
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function asObject(value: unknown): JsonObject | null {
+  return typeof value === "object" && value !== null
+    ? (value as JsonObject)
+    : null;
+}
+
 export default function HomePage() {
   const [step, setStep] = useState<Step>("idle");
 
   const [walletAddress, setWalletAddress] = useState("");
   const [challenge, setChallenge] = useState("");
-  const [signature, setSignature] = useState("");
-  const [accessToken, setAccessToken] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [balance, setBalance] = useState("");
   const [error, setError] = useState("");
 
@@ -46,7 +65,7 @@ export default function HomePage() {
       setError("");
       setStep("connecting");
 
-      const ethereum = (window as any).ethereum;
+      const ethereum = window.ethereum;
 
       if (!ethereum) {
         throw new Error(
@@ -59,11 +78,11 @@ export default function HomePage() {
         method: "eth_requestAccounts",
       });
 
-      if (!accounts?.length) {
+      if (!Array.isArray(accounts) || typeof accounts[0] !== "string") {
         throw new Error("No wallet account returned.");
       }
 
-      const address = accounts[0];
+      const address = ethers.getAddress(accounts[0]);
 
       setWalletAddress(address);
 
@@ -77,18 +96,16 @@ export default function HomePage() {
         method: "eth_chainId",
       });
 
-      console.log("Wallet chain:", currentChainId);
-
-      if (parseInt(currentChainId, 16) !== CHAIN_ID) {
+      if (typeof currentChainId !== "string" || Number.parseInt(currentChainId, 16) !== CHAIN_ID) {
         throw new Error(
           `Wrong network. Please switch the wallet to ITL Testnet (Chain ID ${CHAIN_ID}).`
         );
       }
 
       await getChallenge(address);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStep("error");
-      setError(err?.message || "Wallet connection failed.");
+      setError(getErrorMessage(err, "Wallet connection failed."));
     }
   }
 
@@ -113,51 +130,21 @@ export default function HomePage() {
 
     const url = `${INTERLINK_RPC}/auth/challenge`;
 
-    const requestBody = {
-      walletAddress: address,
-      chainId: String(CHAIN_ID),
-    };
-    console.log("========== INTERLINK CHALLENGE ==========");
-    console.log("REQUEST URL:", url);
-    console.log("REQUEST BODY:");
-    console.log(
-      JSON.stringify(requestBody, null, 2)
-    );
-
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        walletAddress: address,
+        chainId: String(CHAIN_ID),
+      }),
     });
 
     const rawBody = await response.text();
-
-    console.log("RESPONSE STATUS:", response.status);
-    console.log("RESPONSE STATUS TEXT:", response.statusText);
-    console.log("RESPONSE RAW BODY:", rawBody);
-
-    let data: any;
-
-    try {
-      data = JSON.parse(rawBody);
-
-      console.log(
-        "RESPONSE JSON:"
-      );
-
-      console.log(
-        JSON.stringify(data, null, 2)
-      );
-    } catch {
-      data = rawBody;
-
-      console.log(
-        "Response was not JSON."
-      );
-    }
+    const data = asObject(JSON.parse(rawBody));
+    if (!data) throw new Error("Interlink returned an invalid challenge response.");
 
     if (!response.ok) {
       let message: string;
@@ -177,22 +164,11 @@ export default function HomePage() {
       );
     }
 
-    console.log(
-      "CHALLENGE SUCCESS:",
-      data
-    );
+    const result = asObject(data.result);
+    const challengeId = result?.challengeId;
+    const messageToSign = result?.messageToSign;
 
-    const challengeId = data?.result?.challengeId;
-
-    const messageToSign = data?.result?.messageToSign;
-
-    const expiresAt = data?.result?.expiresAt;
-
-    console.log("Challenge ID:", challengeId);
-    console.log("Message to sign:", messageToSign);
-    console.log("Expires at:", expiresAt);
-
-    if (!challengeId || !messageToSign) {
+    if (typeof challengeId !== "string" || typeof messageToSign !== "string") {
       throw new Error(
         "Interlink returned a successful response, but challengeId or messageToSign is missing:\n" +
           JSON.stringify(data, null, 2)
@@ -207,19 +183,9 @@ export default function HomePage() {
       challengeId
     );
 
-  } catch (err: any) {
-    console.error(
-      "========== CHALLENGE ERROR =========="
-    );
-
-    console.error(err);
-
+  } catch (err: unknown) {
     setStep("error");
-
-    setError(
-      err?.message ||
-        "Could not obtain Interlink challenge."
-    );
+    setError(getErrorMessage(err, "Could not obtain Interlink challenge."));
   }
 }
 
@@ -241,24 +207,13 @@ export default function HomePage() {
       setStep("signing");
       setError("");
 
-      const ethereum = (window as any).ethereum;
+      const ethereum = window.ethereum;
 
       if (!ethereum) {
         throw new Error("Wallet is not available.");
       }
 
-      console.log("=== SIGNING CHALLENGE ===");
-      console.log("Address:", address);
-      console.log("Challenge ID:", challengeId);
-      console.log("Message:", message);
-
       const messageBytes = ethers.toUtf8Bytes(message);
-
-      console.log(
-        "Message bytes:",
-        messageBytes
-      );
-
       const signature = await ethereum.request({
         method: "personal_sign",
         params: [
@@ -267,33 +222,17 @@ export default function HomePage() {
         ],
       });
 
-      console.log(
-        "=== SIGNATURE RECEIVED ==="
-      );
-      console.log(signature);
+      if (typeof signature !== "string") throw new Error("Wallet returned an invalid signature.");
 
-      setSignature(signature);
-
-      // Don't verify yet.
-      // First confirm signing works.
       await verifySignature(
         address, 
         message, 
         signature,
         challengeId
-      )
-    } catch (err: any) {
-      console.error(
-        "=== WALLET SIGNING ERROR ===",
-        err
       );
-
+    } catch (err: unknown) {
       setStep("error");
-
-      setError(
-        err?.message ||
-          "Wallet signing failed."
-      );
+      setError(getErrorMessage(err, "Wallet signing failed."));
     }
   }
 
@@ -329,18 +268,12 @@ export default function HomePage() {
 
       const rawBody = await response.text();
 
-      let data: any;
+      let data: unknown;
 
       try {
         data = JSON.parse(rawBody);
-
-        console.log("RESPONSE JSON:");
-        console.log(JSON.stringify(data, null, 2));
       } catch {
         data = rawBody;
-
-        console.log("Response was not JSON:");
-        console.log(rawBody);
       }
 
       const info =
@@ -354,29 +287,23 @@ export default function HomePage() {
         );
       }
 
-      console.log("Verify response:", data);
+      const result = asObject(asObject(data)?.result);
+      const token = result?.accessToken;
 
-      const token = data?.result?.accessToken;
-      const refreshToken = data?.result?.refreshToken;
-
-      if (!token) {
+      if (typeof token !== "string" || !token) {
         throw new Error(
-          `Verification succeeded but no access token was found in the response ${response.status}:\n${info}.`
+          `Verification succeeded but no access token was found in the response ${response.status}.`
         );
       }
 
-      setAccessToken(token);
+      setIsAuthenticated(true);
       setStep("authenticated");
 
       // Immediately test the authenticated RPC.
       await getBalance(address, token);
-    } catch (err: any) {
-      console.error("Signature verification error:", err);
-
+    } catch (err: unknown) {
       setStep("error");
-      setError(
-        err?.message || "Signature verification failed."
-      );
+      setError(getErrorMessage(err, "Signature verification failed."));
     }
   }
 
@@ -423,32 +350,26 @@ export default function HomePage() {
         );
       }
 
-      const data = await response.json();
+      const data = asObject(await response.json());
+      if (!data) throw new Error("RPC returned an invalid response.");
 
-      console.log("RPC response:", data);
-
-      if (data.error) {
+      const rpcError = asObject(data.error);
+      if (rpcError) {
         throw new Error(
-          data.error.message || "RPC error"
+          typeof rpcError.message === "string" ? rpcError.message : "RPC error"
         );
       }
 
-      const balanceWei = BigInt(data.result);
+      if (typeof data.result !== "string" || !/^0x[\da-f]+$/i.test(data.result)) {
+        throw new Error("RPC returned an invalid balance value.");
+      }
 
-      /*
-       * tITL uses 18 decimals according to the PDF.
-       */
-      const balanceITL =
-        Number(balanceWei) / 1e18;
-
-      setBalance(balanceITL.toString());
+      setBalance(ethers.formatEther(BigInt(data.result)));
 
       setStep("authenticated");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStep("error");
-      setError(
-        err?.message || "Authenticated RPC call failed."
-      );
+      setError(getErrorMessage(err, "Authenticated RPC call failed."));
     }
   }
 
@@ -494,8 +415,11 @@ export default function HomePage() {
             step !== "idle" &&
             step !== "error"
           }
+          className="rounded-md"
           style={{
             padding: "12px 20px",
+            backgroundColor:"blue",
+            color: "white",
             cursor: "pointer",
           }}
         >
@@ -530,6 +454,7 @@ export default function HomePage() {
           <pre
             style={{
               background: "#f4f4f4",
+              color: "black",
               padding: 15,
               overflow: "auto",
             }}
@@ -544,29 +469,15 @@ export default function HomePage() {
       <section style={{ marginTop: 30 }}>
         <h2>4. Signature</h2>
 
-        {signature ? (
-          <pre
-            style={{
-              background: "#f4f4f4",
-              padding: 15,
-              overflow: "auto",
-              wordBreak: "break-all",
-            }}
-          >
-            {signature}
-          </pre>
-        ) : (
-          <p>
-            The wallet signature will appear here after
-            the user approves the signing request.
-          </p>
-        )}
+        <p>
+          The wallet signature is sent directly for verification and is not displayed.
+        </p>
       </section>
 
       <section style={{ marginTop: 30 }}>
         <h2>5. Authentication</h2>
 
-        {accessToken ? (
+        {isAuthenticated ? (
           <p>
             ✅ Interlink authentication successful.
           </p>
@@ -621,6 +532,8 @@ export default function HomePage() {
             }}
             style={{
                 marginTop: 10,
+                background: "red",
+                color: "white",
                 padding: "8px 14px",
             }}
             >
