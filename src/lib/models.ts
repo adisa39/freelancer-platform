@@ -255,6 +255,7 @@ const ContactSchema = new Schema({
 
 // ── Export Models ─────────────────────────────────────────────────────────────
 export const UserModel = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export const WalletModel = mongoose.models.Wallet || mongoose.model<IWallet>('Wallet', WalletSchema);
 export const ServiceModel = mongoose.models.Service || mongoose.model('Service', ServiceSchema);
 export const QuoteModel = mongoose.models.Quote || mongoose.model('Quote', QuoteSchema);
 export const OrderModel = mongoose.models.Order || mongoose.model('Order', OrderSchema);
