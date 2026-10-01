@@ -1,12 +1,12 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { UserRoleEnum } from '@/types/enum';
+import { UserRole } from '@/types/enum';
 
 // ── User Model ────────────────────────────────────────────────────────────────
 export interface IUser extends Document {
   name: string;
   email?: string;
   interlinkLoginId?: string;
-  role: UserRoleEnum;
+  role: UserRole;
   phone?: string;
   company?: string;
   location?: string;
@@ -45,8 +45,8 @@ const UserSchema = new Schema<IUser>(
 
     role: {
       type: String,
-      enum: UserRoleEnum,
-      default: UserRoleEnum.Client,
+      enum: UserRole,
+      default: UserRole.CLIENT,
     },
 
     phone: String,
