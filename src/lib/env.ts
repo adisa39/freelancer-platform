@@ -5,6 +5,8 @@ export const env = {
   NEXT_PUBLIC_INTERLINK_APP_ID: process.env.NEXT_PUBLIC_INTERLINK_APP_ID,
   INTERLINK_APP_ID: process.env.INTERLINK_APP_ID,
   NODE_ENV: process.env.NODE_ENV,
+  CHAIN_ID: process.env.CHAIN_ID || 19042026,
+  INTERLINK_RPC: process.env.INTERLINK_RPC || "https://evm-rpc.test-net.interlinklabs.ai/v1"
 };
 
 export function getJwtSecret(): string {

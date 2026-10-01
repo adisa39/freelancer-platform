@@ -3,21 +3,29 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Mdk2 } from '@interlinklabs/mdk';
 import { ArrowRight, BriefcaseBusiness, ShieldCheck, UserRound } from 'lucide-react';
+import { UserRole } from '@/types/enum';
+
+import { ethers } from "ethers";
 import { env } from '@/lib/env';
+import { getErrorMessage } from '@/lib/utils';
+
+declare global {
+  interface Window {
+    ethereum?: {
+      request(args: { method: string; params?: unknown[] }): Promise<unknown>;
+    };
+  }
+}
 
 type Mode = 'login' | 'register';
 type Props = { mode: Mode };
-type InterlinkSuccess = { webToken: string; appToken?: string; payload?: { appId: string; loginId: string } };
-
-const APP_ID = env.NEXT_PUBLIC_INTERLINK_APP_ID;
+type InterlinkSuccess = { webToken: string; appToken?: string; payload?: { wallet: string; loginId: string } };
 
 export default function InterlinkAuth({ mode }: Props) {
   const router = useRouter();
   const started = useRef(false);
-  const [role, setRole] = useState<'client' | 'freelancer'>('client');
+  const [role, setRole] = useState<UserRole>(UserRole.CLIENT);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [bio, setBio] = useState('');
@@ -25,36 +33,41 @@ export default function InterlinkAuth({ mode }: Props) {
   const [pendingWebToken, setPendingWebToken] = useState('');
   const [status, setStatus] = useState<'idle' | 'waiting' | 'working' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [walletAddress, setWalletAddress] = useState("");
 
-  async function completeSignIn(data?: InterlinkSuccess) {
-    if (!data?.webToken) {
+  async function completeSignIn(wallet: string) {
+    if (!wallet) {
       started.current = false;
       setStatus('error');
       setMessage('InterLink did not return a valid login token. Please try again inside the InterLink app.');
       return;
     }
+
     if (mode === 'register' && !started.current) {
-      setPendingWebToken(data.webToken);
-      setMessage('InterLink ID is ready. Confirm your account type and profile, then continue.');
+      setMessage('InterLink wallet is ready. Confirm your account type and profile, then continue.');
       return;
     }
+
     setStatus('working');
-    setMessage('Verifying your InterLink ID…');
+    setMessage('Verifying your InterLink wallet…');
+
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
-          action: 'interlink', flow: mode, webToken: data.webToken,
-          role: role === 'freelancer' ? 'freelancer' : 'client',
+          action: 'interlink', flow: mode, wallet,
+          role: role === UserRole.FREELANCER ? UserRole.FREELANCER : UserRole.CLIENT,
           profile: { name, location, bio, skills: skills.split(',').map(value => value.trim()).filter(Boolean) },
         }),
       });
+
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'InterLink sign-in could not be completed.');
       const accountRole = result.data.user.role;
-      router.replace(mode === 'register' ? (accountRole === 'freelancer' ? '/jobs' : '/post-job') : '/dashboard');
+
+      router.replace(mode === 'register' ? (accountRole === UserRole.FREELANCER ? '/jobs' : '/post-job') : '/dashboard');
       router.refresh();
     } catch (error) {
       started.current = false;
@@ -70,56 +83,177 @@ export default function InterlinkAuth({ mode }: Props) {
     setMessage('InterLink could not verify this sign-in. Open the mini-app in InterLink and try again.');
   }
 
+  async function connectWallet() {
+      try {
+        setStatus("idle");  
+        const ethereum = window.ethereum;
+  
+        if (!ethereum) {
+          throw new Error(
+            "No browser wallet detected. Install/connect the Interlink-compatible wallet."
+          );
+        }
+  
+        // Ask wallet for the user's public address
+        const accounts = await ethereum.request({
+          method: "eth_requestAccounts",
+        });
+  
+        if (!Array.isArray(accounts) || typeof accounts[0] !== "string") {
+          throw new Error("No wallet account returned.");
+        }
+  
+        const address = ethers.getAddress(accounts[0]);
+  
+        setWalletAddress(address);  
+        const currentChainId = await ethereum.request({
+          method: "eth_chainId",
+        });
+  
+        if (typeof currentChainId !== "string" || Number.parseInt(currentChainId, 16) !== env.CHAIN_ID) {
+          throw new Error(
+            `Wrong network. Please switch the wallet to ITL Testnet (Chain ID ${env.CHAIN_ID}).`
+          );
+        }
+  
+        await completeSignIn(address);
+      } catch (err: unknown) {
+        setStatus("error");
+        setMessage(getErrorMessage(err, "Wallet connection failed."));
+      }
+    }
+
   const isRegister = mode === 'register';
   return (
     <main className="auth-shell">
       <div className="grid-bg auth-grid" />
       <section className="auth-content">
         <Link href="/" className="brand-lockup">
-          <span className="brand-mark"><Image src="/logo.png" alt="BF Blessy" width={42} height={42} /></span>
-          <span><strong><i>BF</i> Blessy </strong><small>interlink marketplace</small></span>
+          <span>
+            <strong>
+              <i>BF</i> Blessy 
+            </strong>
+            <small> interlink job platform</small>
+          </span>
         </Link>
 
         <div className="auth-card">
-          <div className="eyebrow"><ShieldCheck size={15} /> InterLink ID</div>
-          <h1>{isRegister ? 'Join the Linker network' : 'Welcome back'}</h1>
-          <p className="intro">{isRegister ? 'Use your verified InterLink ID to set up your marketplace profile.' : 'Sign in securely with the InterLink app. No marketplace password needed.'}</p>
+          <div className="eyebrow"><ShieldCheck size={15} /> InterLink Login</div>
+          <h1>{isRegister ? 'Join the BF Blessy jobs' : 'Welcome back'}</h1>
+          <p className="intro">Connect using Interlink App</p>
 
           {isRegister && <div className="role-picker" aria-label="Choose account type">
-            <button type="button" aria-pressed={role === 'client'} className={role === 'client' ? 'selected' : ''} onClick={() => setRole('client')}>
-              <BriefcaseBusiness size={18} /><span><b>Job poster</b><small>Hire Linkers</small></span>
-            </button>
-            <button type="button" aria-pressed={role === 'freelancer'} className={role === 'freelancer' ? 'selected' : ''} onClick={() => setRole('freelancer')}>
-              <UserRound size={18} /><span><b>Linker</b><small>Find projects</small></span>
+            <button type="button" aria-pressed={role === UserRole.CLIENT} className={role === UserRole.CLIENT ? 'selected' : ''} onClick={() => setRole(UserRole.CLIENT)}>
+              <BriefcaseBusiness size={18} />
+              <span><b>Job poster</b><small>Hire Linkers</small></span>
+            </button> 
+
+            <button 
+              type="button" 
+              aria-pressed={role === UserRole.FREELANCER} 
+              className={role === UserRole.FREELANCER ? 'selected' : ''} 
+              onClick={() => setRole(UserRole.FREELANCER)}
+            >
+              <UserRound size={18} />
+              <span><b>Linker</b><small>Find projects</small></span>
             </button>
           </div>}
 
           {isRegister && <div className="profile-fields">
-            <label>Display name<input value={name} onChange={e => setName(e.target.value)} autoComplete="name" placeholder="How clients will see you" maxLength={100} /></label>
-            {role === 'freelancer' && <>
-              <label>Location <span>Optional</span><input value={location} onChange={e => setLocation(e.target.value)} placeholder="City, country" maxLength={120} /></label>
-              <label>Skills <span>Separate with commas</span><input value={skills} onChange={e => setSkills(e.target.value)} placeholder="Design, writing, development" /></label>
-              <label>About you <span>Optional</span><textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell clients what you do best" rows={3} maxLength={2000} /></label>
+            <label>
+              Display name
+              <input 
+                value={name} 
+                onChange={e => setName(e.target.value)} 
+                autoComplete="name" 
+                placeholder="How clients will see you" 
+                maxLength={100} 
+              />
+            </label>
+
+            {role === UserRole.FREELANCER && <>
+              <label>
+                Location 
+                <span>Optional</span>
+                <input 
+                  value={location} 
+                  onChange={e => setLocation(e.target.value)} 
+                  placeholder="City, country" maxLength={120} 
+                />
+              </label>
+
+              <label>
+                Skills 
+                <span>Separate with commas</span>
+                <input 
+                  value={skills} 
+                  onChange={e => setSkills(e.target.value)} 
+                  placeholder="Design, writing, development" 
+                />
+              </label>
+
+              <label>
+                About you 
+                <span>Optional</span>
+                <textarea 
+                  value={bio} 
+                  onChange={e => setBio(e.target.value)} 
+                  placeholder="Tell clients what you do best" 
+                  rows={3} 
+                  maxLength={2000} 
+                />
+              </label>
             </>}
           </div>}
 
-          {!APP_ID ? 
-            <div className="config-message" role="status">InterLink sign-in is not configured yet. Set <code>NEXT_PUBLIC_INTERLINK_APP_ID</code> to the App ID registered for this mini-app.</div> : pendingWebToken ? <button type="button" className="interlink-button" disabled={status === 'working'} onClick={() => { started.current = true; void completeSignIn({ webToken: pendingWebToken }); }}>
-              <span className="interlink-symbol">i</span>{status === 'working' ? 'Verifying…' : 'Continue with this InterLink ID'}<ArrowRight size={17} />
-            </button> :             
-            <Mdk2 appid={APP_ID} onSuccess={completeSignIn} onFailure={handleFailure}>
-              {({ open }) => <button type="button" className="interlink-button" disabled={status === 'working'} onClick={() => { started.current = true; setStatus('waiting'); setMessage('Waiting for InterLink…'); open(); }}>
-                <span className="interlink-symbol">i</span>{status === 'working' ? 'Verifying…' : status === 'waiting' ? 'Waiting for InterLink…' : 'Continue with InterLink'}<ArrowRight size={17} />
-              </button>}
-            </Mdk2>
-          }
+          <button 
+            type="button" 
+            className="interlink-button" 
+            disabled={status === 'working'} 
+            onClick={() => { 
+              started.current = true;               
+              setStatus('waiting'); 
+              setMessage('Waiting for InterLink…');  
+              connectWallet();
+            }}
+          >
+            <span className="interlink-symbol">i</span>
+            {status === 'working' ? 'Verifying…' : status === 'waiting' ? 'Waiting for InterLink…' : 'Continue with InterLink'}
+            <ArrowRight size={17} />
+          </button>
 
-          {message && <p className={`feedback ${status === 'error' ? 'error' : ''}`} role={status === 'error' ? 'alert' : 'status'}>{message}</p>}
-          <p className="trust-note"><ShieldCheck size={14} /> Your InterLink token is verified on the server. Your marketplace session uses a secure HttpOnly cookie.</p>
-          <div className="auth-switch">{isRegister ? <>Already registered? <Link href="/login">Sign in</Link></> : <>New to the marketplace? <Link href="/register">Create a Linker account</Link></>}</div>
+          {message && <p 
+            className={`feedback ${status === 'error' ? 'error' : ''}`} 
+            role={status === 'error' ? 'alert' : 'status'}
+          >
+            {message}
+          </p>}
+
+          <p className="trust-note">
+            <ShieldCheck size={14} />
+            Your InterLink wallet is verified on the server. Your platform session uses a secure HttpOnly cookie.
+          </p>
+
+          <div className="auth-switch">
+            {isRegister ? 
+            <>
+              Already registered? 
+              <Link href="/login">Sign in</Link>
+            </> : 
+            <>
+              New to the marketplace? 
+              <Link href="/register">
+                Create a Linker account
+              </Link>
+            </>}
+          </div>
         </div>
-        <p className="auth-foot">Your InterLink ID is your sign-in. Your marketplace profile controls whether you post jobs or work as a Linker.</p>
+
+        <p className="auth-foot">
+          Your InterLink ID is your sign-in. Your marketplace profile controls whether you post jobs or work as a Linker.
+        </p>
       </section>
+
       <style jsx>{`
         .auth-shell{min-height:100vh;display:grid;place-items:center;padding:100px 18px 42px;background:var(--bg-base);position:relative;overflow:hidden}
         .auth-grid{position:fixed;inset:0;opacity:.5;pointer-events:none}
