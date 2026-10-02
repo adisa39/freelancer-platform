@@ -1,5 +1,6 @@
-import InterlinkAuth from '@/components/auth/InterlinkAuth';
+﻿import InterlinkAuth from '@/components/auth/InterlinkAuth';
+import { GuestOnly } from '@/context/AuthContext';
 
 export default function LoginPage() {
-  return <InterlinkAuth mode="login" />;
+  return <GuestOnly><InterlinkAuth mode="login" /></GuestOnly>;
 }

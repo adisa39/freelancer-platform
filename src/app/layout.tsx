@@ -3,6 +3,7 @@ import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { AuthProvider } from '@/context/AuthContext';
 export const metadata: Metadata = {
   title: 'BF Blessy â€” Linker Marketplace',
   description: 'Find skilled Linkers, post projects, review proposals, and hire with InterLink ID.',
@@ -14,9 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body>
         <ThemeProvider>
+          <AuthProvider>
           <Navbar />
           <main style={{ minHeight: '100vh' }}>{children}</main>
           <Footer />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

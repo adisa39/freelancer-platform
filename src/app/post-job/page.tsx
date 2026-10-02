@@ -1,13 +1,14 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Trash2, Send, CheckCircle } from 'lucide-react';
 import { JOB_CATEGORIES } from '@/lib/data';
+import { RequireAuth } from '@/context/AuthContext';
 
 interface MilestoneInput { title: string; description: string; amount: string; }
 
-export default function PostJobPage() {
+function PostJobContent() {
   const router = useRouter();
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -69,7 +70,7 @@ export default function PostJobPage() {
       <section style={{ paddingTop: 110, paddingBottom: 36, background: 'var(--bg-surface)', position: 'relative', overflow: 'hidden' }}>
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: .45 }} />
         <div className="container-brand" style={{ position: 'relative', zIndex: 1 }}>
-          <span style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: 10 }}>— Hire a Linker —</span>
+          <span style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: 10 }}>â€” Hire a Linker â€”</span>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--text-primary)', lineHeight: 1.15 }}>
             Post a <span style={{ background: 'linear-gradient(135deg,var(--sand),var(--accent-bright))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Translation Job</span>
           </h1>
@@ -88,7 +89,7 @@ export default function PostJobPage() {
 
                 <div style={{ marginBottom: 14 }}>
                   <label style={lbl}>Job Title *</label>
-                  <input style={inp} required placeholder="e.g. Swahili → English Legal Contract Translation" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} onFocus={focus} onBlur={blur} />
+                  <input style={inp} required placeholder="e.g. Swahili â†’ English Legal Contract Translation" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} onFocus={focus} onBlur={blur} />
                 </div>
                 <div style={{ marginBottom: 14 }}>
                   <label style={lbl}>Description *</label>
@@ -222,16 +223,16 @@ export default function PostJobPage() {
             {/* Sidebar tips */}
             <div>
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 22, marginBottom: 16 }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.95rem', color: 'var(--text-primary)', marginBottom: 14 }}>💡 Tips for Great Job Posts</h3>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.95rem', color: 'var(--text-primary)', marginBottom: 14 }}>ðŸ’¡ Tips for Great Job Posts</h3>
                 {['Be specific about the work and expected outcome','List the skills or experience you need','Describe the deliverables and review process','State your preferred deadline clearly','Clear payment terms attract better Linkers'].map((tip, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                    <span style={{ color: 'var(--accent)', fontSize: '.8rem', marginTop: 1, flexShrink: 0 }}>→</span>
+                    <span style={{ color: 'var(--accent)', fontSize: '.8rem', marginTop: 1, flexShrink: 0 }}>â†’</span>
                     <span style={{ fontSize: '.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{tip}</span>
                   </div>
                 ))}
               </div>
               <div style={{ background: 'var(--bg-card)', border: '1px solid rgba(45,125,210,.2)', borderRadius: 16, padding: 22 }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.95rem', color: 'var(--text-primary)', marginBottom: 10 }}>🔌 API Endpoint</h3>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.95rem', color: 'var(--text-primary)', marginBottom: 10 }}>ðŸ”Œ API Endpoint</h3>
                 <code style={{ fontSize: '.78rem', color: 'var(--accent-bright)', lineHeight: 1.8, display: 'block' }}>
                   POST /api/jobs<br />
                   Authorization: Bearer &lt;token&gt;<br /><br />
@@ -252,4 +253,8 @@ export default function PostJobPage() {
       `}</style>
     </>
   );
+}
+
+export default function PostJobPage() {
+  return <RequireAuth roles={['client', 'admin']}><PostJobContent /></RequireAuth>;
 }

@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 
 import { env } from '@/lib/env';
 import { asObject, getErrorMessage } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 declare global {
   interface Window {
@@ -23,6 +24,7 @@ type Props = { mode: Mode };
 
 export default function InterlinkAuth({ mode }: Props) {
   const router = useRouter();
+  const { refresh } = useAuth();
   const [role, setRole] = useState<UserRole>(UserRole.CLIENT);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
@@ -88,6 +90,7 @@ export default function InterlinkAuth({ mode }: Props) {
         throw new Error(typeof errorPayload?.message === 'string' ? errorPayload.message : 'Wallet sign-in could not be completed.');
       }
 
+      await refresh();
       router.replace(mode === 'register' ? (user.role === UserRole.FREELANCER ? '/jobs' : '/post-job') : '/dashboard');
       router.refresh();
     } catch (error) {

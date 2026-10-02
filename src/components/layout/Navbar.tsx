@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, Moon, Sun, ChevronDown, Briefcase, Users, PlusCircle, LayoutDashboard } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
 
 const NAV = [
   { href: '/jobs',      label: 'Find Jobs',    icon: Briefcase },
@@ -18,6 +19,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { theme, toggle, isDark } = useTheme();
+  const { user, status, signOut } = useAuth();
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 16);
@@ -76,11 +78,15 @@ export default function Navbar() {
             <button onClick={toggle} className="theme-toggle" aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}>
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <Link href="/dashboard" className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <LayoutDashboard size={14} /> Dashboard
-            </Link>
-            <Link href="/login" className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Login</Link>
-            <Link href="/register" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Register</Link>
+            {status === 'authenticated' && user ? <>
+              <Link href="/dashboard" className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <LayoutDashboard size={14} /> Dashboard
+              </Link>
+              <button type="button" className="btn-secondary" onClick={() => void signOut()} style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Sign out</button>
+            </> : status === 'unauthenticated' ? <>
+              <Link href="/login" className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Login</Link>
+              <Link href="/register" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.84rem' }}>Register</Link>
+            </> : null}
           </div>
 
           {/* Mobile controls */}
@@ -107,8 +113,13 @@ export default function Navbar() {
               </Link>
             ))}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
-              <Link href="/login" className="btn-secondary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Sign in with InterLink</Link>
-              <Link href="/register" className="btn-primary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Join as Linker →</Link>
+              {status === 'authenticated' ? <>
+                <Link href="/dashboard" className="btn-secondary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Dashboard</Link>
+                <button type="button" className="btn-primary" style={{ justifyContent: 'center' }} onClick={() => { setOpen(false); void signOut(); }}>Sign out</button>
+              </> : status === 'unauthenticated' ? <>
+                <Link href="/login" className="btn-secondary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Sign in with InterLink</Link>
+                <Link href="/register" className="btn-primary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>Join as Linker →</Link>
+              </> : null}
             </div>
           </div>
         </div>
