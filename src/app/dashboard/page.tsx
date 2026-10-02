@@ -1,43 +1,44 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Briefcase, Users, CheckCircle, DollarSign, Plus, Bell, LogOut, Star, Clock, ArrowRight, Send } from 'lucide-react';
 import { JOB_STATUS_CONFIG, APP_STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from '@/lib/data';
-import { signOutFromInterlink } from '@/lib/interlink-session';
+import { RequireAuth, useAuth } from '@/context/AuthContext';
 
 const MOCK_STATS = { postedJobs: { total: 4, active: 2, completed: 9 }, workHistory: { applied: 17, completed: 3 }, reputation: { rating: 4.8, reviews: 12 } };
 const MOCK_JOBS = [
-  { _id: '1', title: 'Swahili → English Legal Contract', assignedTo: 'Fatima Al-Hassan', status: 'in_progress', budget: { min: 400, max: 800, currency: 'USD' }, applicationsCount: 3, deadline: '2024-01-20' },
+  { _id: '1', title: 'Swahili â†’ English Legal Contract', assignedTo: 'Fatima Al-Hassan', status: 'in_progress', budget: { min: 400, max: 800, currency: 'USD' }, applicationsCount: 3, deadline: '2024-01-20' },
   { _id: '2', title: 'Arabic Medical Report (200 pages)', assignedTo: null, status: 'open', budget: { min: 1200, max: 2000, currency: 'USD' }, applicationsCount: 7, deadline: '2024-01-25' },
-  { _id: '3', title: 'Website Localization EN → Swahili', assignedTo: 'Chidi Eze', status: 'completed', budget: { min: 600, max: 1000, currency: 'USD' }, applicationsCount: 12, deadline: null },
-  { _id: '4', title: 'Chinese Business Docs → Swahili', assignedTo: null, status: 'open', budget: { min: 300, max: 600, currency: 'USD' }, applicationsCount: 5, deadline: '2024-01-18' },
+  { _id: '3', title: 'Website Localization EN â†’ Swahili', assignedTo: 'Chidi Eze', status: 'completed', budget: { min: 600, max: 1000, currency: 'USD' }, applicationsCount: 12, deadline: null },
+  { _id: '4', title: 'Chinese Business Docs â†’ Swahili', assignedTo: null, status: 'open', budget: { min: 300, max: 600, currency: 'USD' }, applicationsCount: 5, deadline: '2024-01-18' },
 ];
 const MOCK_APPLICATIONS = [
-  { _id: 'a1', jobTitle: 'French → English Annual Report', proposedRate: 650, status: 'shortlisted', appliedAt: '2024-01-09' },
+  { _id: 'a1', jobTitle: 'French â†’ English Annual Report', proposedRate: 650, status: 'shortlisted', appliedAt: '2024-01-09' },
   { _id: 'a2', jobTitle: 'Amharic Audio Transcription', proposedRate: 280, status: 'pending', appliedAt: '2024-01-10' },
   { _id: 'a3', jobTitle: 'Hausa Website Localization', proposedRate: 450, status: 'accepted', appliedAt: '2024-01-05' },
 ];
 const MOCK_PAYMENTS = [
   { _id: 'py1', jobTitle: 'Legal Contract Translation', amount: 400, currency: 'USD', status: 'in_escrow', reference: 'PAY-1704892800-A8XK', createdAt: '2024-01-10' },
-  { _id: 'py2', jobTitle: 'Website Localization — M1', amount: 300, currency: 'USD', status: 'released', reference: 'PAY-1704806400-Z3MN', createdAt: '2024-01-08' },
-  { _id: 'py3', jobTitle: 'Medical Reports — Full', amount: 1800, currency: 'USD', status: 'released', reference: 'PAY-1704720000-Q9PL', createdAt: '2024-01-06' },
+  { _id: 'py2', jobTitle: 'Website Localization â€” M1', amount: 300, currency: 'USD', status: 'released', reference: 'PAY-1704806400-Z3MN', createdAt: '2024-01-08' },
+  { _id: 'py3', jobTitle: 'Medical Reports â€” Full', amount: 1800, currency: 'USD', status: 'released', reference: 'PAY-1704720000-Q9PL', createdAt: '2024-01-06' },
 ];
 
 type Tab = 'overview' | 'jobs' | 'applications' | 'payments' | 'profile';
 
 const NAV = [
-  { id: 'overview', label: 'Overview', icon: '⊞' },
-  { id: 'jobs', label: 'My Jobs', icon: '💼' },
-  { id: 'applications', label: 'Applications', icon: '📋' },
-  { id: 'payments', label: 'Payments', icon: '💳' },
-  { id: 'profile', label: 'Profile', icon: '👤' },
+  { id: 'overview', label: 'Overview', icon: 'âŠž' },
+  { id: 'jobs', label: 'My Jobs', icon: 'ðŸ’¼' },
+  { id: 'applications', label: 'Applications', icon: 'ðŸ“‹' },
+  { id: 'payments', label: 'Payments', icon: 'ðŸ’³' },
+  { id: 'profile', label: 'Profile', icon: 'ðŸ‘¤' },
 ];
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
+  const { user, signOut } = useAuth();
   const [tab, setTab] = useState<Tab>('overview');
-  const signOut = async () => { await signOutFromInterlink(); router.replace('/login'); router.refresh(); };
+  const handleSignOut = async () => { await signOut(); router.replace('/login'); router.refresh(); };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)', paddingTop: 68, display: 'flex', flexDirection: 'column' }}>
@@ -46,7 +47,7 @@ export default function DashboardPage() {
         <div className="container-brand" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div>
             <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>Dashboard</h1>
-            <p style={{ fontSize: '.76rem', color: 'var(--text-secondary)' }}>Welcome back, Aisha — here's your overview</p>
+            <p style={{ fontSize: '.76rem', color: 'var(--text-secondary)' }}>Welcome back, {user?.name || 'Linker'} — here's your overview</p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <Link href="/post-job" className="btn-primary" style={{ padding: '8px 16px', fontSize: '.82rem' }}><Plus size={13} /> Post Job</Link>
@@ -76,7 +77,7 @@ export default function DashboardPage() {
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,var(--accent-dark),var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', color: '#fff' }}>A</div>
               <div><div style={{ fontSize: '.84rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Aisha O.</div><div style={{ fontSize: '.72rem', color: 'var(--text-secondary)' }}>Client</div></div>
             </div>
-            <button onClick={signOut} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontSize: '.82rem' }}>
+            <button onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontSize: '.82rem' }}>
               <LogOut size={13} /> Sign Out
             </button>
           </div>
@@ -143,10 +144,10 @@ export default function DashboardPage() {
                         <span style={{ fontSize: '.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 99, background: st?.bg, color: st?.color, flexShrink: 0 }}>{st?.label}</span>
                       </div>
                       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '.8rem', color: 'var(--text-secondary)', marginBottom: 12 }}>
-                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--sand)', fontSize: '.95rem' }}>${j.budget.min}–{j.budget.max}</span>
+                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--sand)', fontSize: '.95rem' }}>${j.budget.min}â€“{j.budget.max}</span>
                         <span><Users size={11} style={{ display: 'inline', marginRight: 3 }} />{j.applicationsCount} applicants</span>
                         {j.deadline && <span><Clock size={11} style={{ display: 'inline', marginRight: 3 }} />Due {j.deadline}</span>}
-                        {j.assignedTo && <span>→ <span style={{ color: 'var(--sand)' }}>{j.assignedTo}</span></span>}
+                        {j.assignedTo && <span>â†’ <span style={{ color: 'var(--sand)' }}>{j.assignedTo}</span></span>}
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button className="btn-secondary" style={{ padding: '6px 14px', fontSize: '.78rem' }}>View Applicants</button>
@@ -169,7 +170,7 @@ export default function DashboardPage() {
                     <div key={a._id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                       <div>
                         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '.92rem', color: 'var(--text-primary)', marginBottom: 4 }}>{a.jobTitle}</div>
-                        <div style={{ fontSize: '.78rem', color: 'var(--text-secondary)' }}>Proposed: <span style={{ color: 'var(--sand)', fontWeight: 600 }}>${a.proposedRate}</span> · Applied {a.appliedAt}</div>
+                        <div style={{ fontSize: '.78rem', color: 'var(--text-secondary)' }}>Proposed: <span style={{ color: 'var(--sand)', fontWeight: 600 }}>${a.proposedRate}</span> Â· Applied {a.appliedAt}</div>
                       </div>
                       <span style={{ fontSize: '.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 99, background: st?.bg, color: st?.color }}>{st?.label}</span>
                     </div>
@@ -211,7 +212,7 @@ export default function DashboardPage() {
               </div>
               <div style={{ marginTop: 18, padding: 14, background: 'rgba(45,125,210,.06)', border: '1px solid rgba(45,125,210,.15)', borderRadius: 12, fontSize: '.8rem', color: 'var(--text-secondary)' }}>
                 <span style={{ color: 'var(--accent-bright)', fontWeight: 600 }}>Escrow flow: </span>
-                Initiate → <span style={{ color: '#F59E0B' }}>In Escrow</span> → Client approves → <span style={{ color: '#4CAF50' }}>Released to Linker</span>
+                Initiate â†’ <span style={{ color: '#F59E0B' }}>In Escrow</span> â†’ Client approves â†’ <span style={{ color: '#4CAF50' }}>Released to Linker</span>
               </div>
             </div>
           )}
@@ -235,7 +236,7 @@ export default function DashboardPage() {
                 ))}
                 <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                   <button className="btn-secondary" style={{ flex: 1, justifyContent: 'center', fontSize: '.84rem' }}>Edit Profile</button>
-                  <button onClick={signOut} style={{ flex: 1, padding: '10px', borderRadius: 8, background: 'rgba(232,76,76,.1)', border: '1px solid rgba(232,76,76,.2)', color: 'var(--red)', cursor: 'pointer', fontSize: '.84rem', fontFamily: 'var(--font-display)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <button onClick={handleSignOut} style={{ flex: 1, padding: '10px', borderRadius: 8, background: 'rgba(232,76,76,.1)', border: '1px solid rgba(232,76,76,.2)', color: 'var(--red)', cursor: 'pointer', fontSize: '.84rem', fontFamily: 'var(--font-display)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                     <LogOut size={13} /> Sign Out
                   </button>
                 </div>
@@ -251,4 +252,8 @@ export default function DashboardPage() {
       `}</style>
     </div>
   );
+}
+
+export default function DashboardPage() {
+  return <RequireAuth><DashboardContent /></RequireAuth>;
 }
