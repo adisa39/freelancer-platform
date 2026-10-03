@@ -35,7 +35,7 @@ export default function AboutPage() {
               <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(2rem, 5vw, 3rem)', color: 'var(--text-primary)', lineHeight: 1.15, marginBottom: 20 }}>
                 We Are BF Blessy —<br />
                 <span style={{ background: 'linear-gradient(135deg, var(--sand), var(--accent-bright))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  Africa's Translation Partner
+                  Africa's Freelance Partner
                 </span>
               </h1>
               <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.8, marginBottom: 16 }}>

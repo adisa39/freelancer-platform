@@ -8,11 +8,11 @@ import { useAuth } from '@/context/AuthContext';
 
 const NAV = [
   { href: '/jobs',      label: 'Find Jobs',    icon: Briefcase },
-  { href: '/linkers',   label: 'Linkers',      icon: Users     },
-  { href: '/post-job',  label: 'Post a Job',   icon: PlusCircle },
-  { href: '/test-flows',  label: 'Test app flow',   icon: PlusCircle },
+  { href: '/linkers',   label: 'Freelancers',      icon: Users     },
+  { href: '/post-job',  label: 'Post a Job',   icon: PlusCircle },  
   { href: '/services',  label: 'Services',     icon: null      },
   { href: '/about',     label: 'About',        icon: null      },
+  // { href: '/test-flows',  label: 'Test app flow',   icon: PlusCircle },
 ];
 
 export default function Navbar() {

@@ -6,7 +6,7 @@ import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 const LINKS = {
   Platform: [
     { label: 'Find Jobs',       href: '/jobs'       },
-    { label: 'Browse Linkers',  href: '/linkers'    },
+    { label: 'Browse Freelancers',  href: '/linkers'    },
     { label: 'Post a Job',      href: '/post-job'   },
     { label: 'Services',        href: '/services'   },
     { label: 'Dashboard',       href: '/dashboard'  },

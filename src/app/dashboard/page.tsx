@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Briefcase, Users, CheckCircle, DollarSign, Plus, Bell, LogOut, Star, Clock, ArrowRight, Send } from 'lucide-react';
+import { Briefcase, Users, CheckCircle, DollarSign, Plus, Bell, LogOut, Star, Clock, ArrowRight, Send, LayoutGrid, BriefcaseBusiness, ClipboardList, WalletCards, UserRound } from 'lucide-react';
 import { JOB_STATUS_CONFIG, APP_STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from '@/lib/data';
 import { RequireAuth, useAuth } from '@/context/AuthContext';
 
@@ -27,11 +27,11 @@ const MOCK_PAYMENTS = [
 type Tab = 'overview' | 'jobs' | 'applications' | 'payments' | 'profile';
 
 const NAV = [
-  { id: 'overview', label: 'Overview', icon: 'âŠž' },
-  { id: 'jobs', label: 'My Jobs', icon: 'ðŸ’¼' },
-  { id: 'applications', label: 'Applications', icon: 'ðŸ“‹' },
-  { id: 'payments', label: 'Payments', icon: 'ðŸ’³' },
-  { id: 'profile', label: 'Profile', icon: 'ðŸ‘¤' },
+  { id: 'overview', label: 'Overview', icon: LayoutGrid },
+  { id: 'jobs', label: 'My Jobs', icon: BriefcaseBusiness },
+  { id: 'applications', label: 'Applications', icon: ClipboardList },
+  { id: 'payments', label: 'Payments', icon: WalletCards },
+  { id: 'profile', label: 'Profile', icon: UserRound },
 ];
 
 function DashboardContent() {
@@ -59,19 +59,24 @@ function DashboardContent() {
       <div className="dash-layout container-brand" style={{ flex: 1, display: 'grid', gap: 0, paddingTop: 24, paddingBottom: 60 }}>
         {/* Sidebar */}
         <aside style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 12px', height: 'fit-content' }} className="dash-aside">
-          {NAV.map(n => (
-            <button key={n.id} onClick={() => setTab(n.id as Tab)} style={{
-              display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px',
-              borderRadius: 9, border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'all .15s',
-              background: tab === n.id ? 'rgba(45,125,210,.12)' : 'transparent',
-              color: tab === n.id ? 'var(--accent-bright)' : 'var(--text-secondary)',
-              fontFamily: 'var(--font-display)', fontWeight: tab === n.id ? 600 : 400, fontSize: '.86rem',
-              marginBottom: 4,
-            }}>
-              <span style={{ fontSize: '1rem', width: 20, textAlign: 'center' }}>{n.icon}</span>
-              {n.label}
-            </button>
-          ))}
+          {NAV.map(n => {
+            const Icon = n.icon;
+            return (
+              <button key={n.id} onClick={() => setTab(n.id as Tab)} style={{
+                display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px',
+                borderRadius: 9, border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'all .15s',
+                background: tab === n.id ? 'rgba(45,125,210,.12)' : 'transparent',
+                color: tab === n.id ? 'var(--accent-bright)' : 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)', fontWeight: tab === n.id ? 600 : 400, fontSize: '.86rem',
+                marginBottom: 4,
+              }}>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>
+                  <Icon size={15} />
+                </span>
+                {n.label}
+              </button>
+            );
+          })}
           <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 6 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,var(--accent-dark),var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', color: '#fff' }}>A</div>

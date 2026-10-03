@@ -72,7 +72,7 @@ function PostJobContent() {
         <div className="container-brand" style={{ position: 'relative', zIndex: 1 }}>
           <span style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: 10 }}>â€” Hire a Linker â€”</span>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--text-primary)', lineHeight: 1.15 }}>
-            Post a <span style={{ background: 'linear-gradient(135deg,var(--sand),var(--accent-bright))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Translation Job</span>
+            Post a <span style={{ background: 'linear-gradient(135deg,var(--sand),var(--accent-bright))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Job</span>
           </h1>
           <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>Any registered user can post jobs. Fields map to <code style={{ fontSize: '.8rem', color: 'var(--accent-bright)', background: 'rgba(45,125,210,.1)', padding: '2px 6px', borderRadius: 4 }}>POST /api/jobs</code></p>
         </div>
@@ -85,7 +85,7 @@ function PostJobContent() {
               {/* Job Details */}
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 'clamp(20px,5vw,36px)', marginBottom: 20 }}>
                 <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)', marginBottom: 4 }}>Job Details</h2>
-                <p style={{ fontSize: '.8rem', color: 'var(--text-secondary)', marginBottom: 22 }}>Describe the translation work needed.</p>
+                <p style={{ fontSize: '.8rem', color: 'var(--text-secondary)', marginBottom: 22 }}>Describe the work needed.</p>
 
                 <div style={{ marginBottom: 14 }}>
                   <label style={lbl}>Job Title *</label>
