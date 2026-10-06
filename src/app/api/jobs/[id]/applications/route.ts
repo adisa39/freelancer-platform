@@ -22,7 +22,7 @@ export async function GET(_req: NextRequest, { params }: Context) {
 export async function POST(req: NextRequest, { params }: Context) {
   const session = await getSession();
   if (!session) return NextResponse.json({ success: false, message: 'Sign in to apply.' }, { status: 401 });
-  if (session.role !== 'translator') return NextResponse.json({ success: false, message: 'Freelancer accounts only.' }, { status: 403 });
+  if (session.role !== 'freelancer') return NextResponse.json({ success: false, message: 'Freelancer accounts only.' }, { status: 403 });
   const { id } = await params;
   if (!mongoose.isValidObjectId(id)) return NextResponse.json({ success: false, message: 'Job not found.' }, { status: 404 });
   const body = await req.json();

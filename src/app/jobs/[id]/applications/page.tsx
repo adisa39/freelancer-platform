@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -50,5 +50,5 @@ function ApplicationsContent() {
 }
 
 export default function ApplicationsPage() {
-  return <RequireAuth roles={['client', 'admin']}><ApplicationsContent /></RequireAuth>;
+  return <RequireAuth roles={['client', 'freelancer', 'admin']}><ApplicationsContent /></RequireAuth>;
 }

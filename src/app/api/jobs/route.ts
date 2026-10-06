@@ -8,6 +8,11 @@ export async function GET(req: NextRequest) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const filter: Record<string, unknown> = {};
+    if (searchParams.get('mine') === 'true') {
+      const session = await getSession();
+      if (!session) return NextResponse.json({ success: false, message: 'Sign in to view your jobs.' }, { status: 401 });
+      filter.posterId = session.id;
+    }
     if (searchParams.get('status')) filter.status = searchParams.get('status');
     const query = searchParams.get('q')?.trim();
     if (query) {
@@ -24,7 +29,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ success: false, message: 'Sign in to post a job.' }, { status: 401 });
-  if (session.role !== 'client' && session.role !== 'admin') return NextResponse.json({ success: false, message: 'Only job posters can post jobs.' }, { status: 403 });
+  if (session.role !== 'client' && session.role !== 'freelancer' && session.role !== 'admin') return NextResponse.json({ success: false, message: 'This account cannot post jobs.' }, { status: 403 });
   try {
     const body = await req.json();
     if (!body.title || !body.description || !body.category || !Array.isArray(body.skills) || !Number.isFinite(body.budgetMin) || !Number.isFinite(body.budgetMax) || body.budgetMax < body.budgetMin) {

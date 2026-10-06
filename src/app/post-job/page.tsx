@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -70,11 +70,11 @@ function PostJobContent() {
       <section style={{ paddingTop: 110, paddingBottom: 36, background: 'var(--bg-surface)', position: 'relative', overflow: 'hidden' }}>
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: .45 }} />
         <div className="container-brand" style={{ position: 'relative', zIndex: 1 }}>
-          <span style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: 10 }}>â€” Hire a Linker â€”</span>
+          <span style={{ fontSize: '.75rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: 10 }}>â€” Marketplace â€”</span>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--text-primary)', lineHeight: 1.15 }}>
             Post a <span style={{ background: 'linear-gradient(135deg,var(--sand),var(--accent-bright))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Job</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>Any registered user can post jobs. Fields map to <code style={{ fontSize: '.8rem', color: 'var(--accent-bright)', background: 'rgba(45,125,210,.1)', padding: '2px 6px', borderRadius: 4 }}>POST /api/jobs</code></p>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>Clients and freelancers can both post opportunities for the community.</p>
         </div>
       </section>
 
@@ -256,5 +256,5 @@ function PostJobContent() {
 }
 
 export default function PostJobPage() {
-  return <RequireAuth roles={['client', 'admin']}><PostJobContent /></RequireAuth>;
+  return <RequireAuth roles={['client', 'freelancer', 'admin']}><PostJobContent /></RequireAuth>;
 }

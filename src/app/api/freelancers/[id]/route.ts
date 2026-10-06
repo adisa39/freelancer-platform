@@ -7,7 +7,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { id } = await params;
   if (!mongoose.isValidObjectId(id)) return NextResponse.json({ success: false, message: 'Freelancer not found.' }, { status: 404 });
   await connectDB();
-  const freelancer = await UserModel.findOne({ _id: id, role: 'translator', isActive: true }).select('-password -email').lean();
+  const freelancer = await UserModel.findOne({ _id: id, role: 'freelancer', isActive: true }).select('name location bio skills languages portfolio hourlyRate skillLevel availability experienceYears education certifications').lean();
   if (!freelancer) return NextResponse.json({ success: false, message: 'Freelancer not found.' }, { status: 404 });
   const [completedJobs, activeJobs] = await Promise.all([
     JobModel.countDocuments({ assignedFreelancerId: id, status: 'completed' }),

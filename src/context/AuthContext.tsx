@@ -84,7 +84,7 @@ export function RequireAuth({ children, roles }: { children: ReactNode; roles?: 
       return;
     }
     if (status === 'authenticated' && roles && user && !roles.includes(user.role)) {
-      router.replace(user.role === 'freelancer' ? '/jobs' : '/dashboard');
+      router.replace('/dashboard');
     }
   }, [pathname, router, roles, status, user]);
 
@@ -104,7 +104,7 @@ export function GuestOnly({ children }: { children: ReactNode }) {
     if (status !== 'authenticated' || !user) return;
     const params = new URLSearchParams(window.location.search);
     const requested = params.get('returnTo');
-    const destination = requested?.startsWith('/') && !requested.startsWith('//') ? requested : user.role === 'freelancer' ? '/jobs' : '/dashboard';
+    const destination = requested?.startsWith('/') && !requested.startsWith('//') ? requested : '/dashboard';
     router.replace(destination);
   }, [pathname, router, status, user]);
 

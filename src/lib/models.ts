@@ -13,6 +13,13 @@ export interface IUser extends Document {
   languages?: string[];
   bio?: string;
   skills?: string[];
+  portfolio?: string;
+  hourlyRate?: number;
+  skillLevel?: 'beginner' | 'intermediate' | 'expert';
+  availability?: 'available' | 'limited' | 'unavailable';
+  experienceYears?: number;
+  education?: string[];
+  certifications?: string[];
   isActive: boolean;
   createdAt: Date;
 }
@@ -63,6 +70,13 @@ const UserSchema = new Schema<IUser>(
       type: [String],
       default: [],
     },
+    portfolio: { type: String, trim: true, maxlength: 500 },
+    hourlyRate: { type: Number, min: 0, max: 1000000 },
+    skillLevel: { type: String, enum: ['beginner', 'intermediate', 'expert'] },
+    availability: { type: String, enum: ['available', 'limited', 'unavailable'], default: 'available' },
+    experienceYears: { type: Number, min: 0, max: 60 },
+    education: { type: [String], default: [] },
+    certifications: { type: [String], default: [] },
 
     isActive: {
       type: Boolean,

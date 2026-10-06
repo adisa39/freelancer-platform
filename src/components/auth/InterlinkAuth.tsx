@@ -91,7 +91,7 @@ export default function InterlinkAuth({ mode }: Props) {
       }
 
       await refresh();
-      router.replace(mode === 'register' ? (user.role === UserRole.FREELANCER ? '/jobs' : '/post-job') : '/dashboard');
+      router.replace(mode === 'register' ? (user.role === UserRole.FREELANCER ? '/dashboard' : '/post-job') : '/dashboard');
       router.refresh();
     } catch (error) {
       setStatus('error');
