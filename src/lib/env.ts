@@ -7,6 +7,8 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV,
   CHAIN_ID: Number(process.env.NEXT_PUBLIC_CHAIN_ID || 19042026),
   INTERLINK_RPC: process.env.INTERLINK_RPC || 'https://evm-rpc.test-net.interlinklabs.ai/v1',
+  DEV_MOCK_AUTH: process.env.DEV_MOCK_AUTH === 'true',
+  DEV_MOCK_ROLE: process.env.DEV_MOCK_ROLE,
 };
 
 export function getJwtSecret(): string {

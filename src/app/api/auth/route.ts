@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import { UserModel, WalletModel } from '@/lib/models';
+import { getDevelopmentMockUser, isDevelopmentMockAuthEnabled } from '@/lib/session';
 import { env, getJwtSecret } from '@/lib/env';
 import { asObject } from '@/lib/utils';
 import { UserRole } from '@/types/enum';
@@ -251,6 +252,8 @@ export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('bf_token')?.value;
     if (!token) {
+      const mockUser = await getDevelopmentMockUser();
+      if (mockUser) return NextResponse.json({ success: true, data: { user: { ...publicUser(mockUser), isDevelopmentMock: true } } }, { headers: { 'Cache-Control': 'no-store' } });
       return NextResponse.json({ success: false, message: 'Not authenticated.' }, { status: 401 });
     }
 

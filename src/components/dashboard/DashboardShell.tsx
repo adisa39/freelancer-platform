@@ -34,7 +34,7 @@ export default function DashboardShell({ title, tab, onTab, user, onSignOut, chi
           </Link>
           <div className="bf-dash-account-card">
             <span className="bf-dash-account-avatar">{initials}</span>
-            <span><strong>{user.name || 'Your account'}</strong><small>{roleLabel} account</small></span>
+            <span><strong>{user.name || 'Your account'}</strong><small>{roleLabel} account{user.isDevelopmentMock === true ? ' · development mock' : ''}</small></span>
           </div>
           <nav className="bf-dash-nav" aria-label="Dashboard">
             <button type="button" className={tab === 'overview' ? 'active' : ''} onClick={() => go('overview')}><LayoutGrid size={18} />Overview</button>
