@@ -187,7 +187,22 @@ function DashboardContent() {
 
       {tab === 'profile' && <form className="bf-dash-profile-form" onSubmit={saveProfile}>
         <section className="bf-dash-card">
-          <div className="bf-dash-section-head"><div><span className="bf-dash-eyebrow">Account settings</span><h2>Profile settings</h2><p>Keep your account and public details current.</p></div><div className="bf-dash-profile-header-actions">{isFreelancer && <Link href={`/linkers/${user._id}`} className="bf-dash-btn ghost">Preview profile <ArrowUpRight size={15} /></Link>}<span className="bf-dash-completion">{profileCompletion}% complete</span></div></div>
+          <div className="bf-dash-section-head">
+            <div>
+              <span className="bf-dash-eyebrow">Account settings</span>
+              <h2>Profile settings</h2>
+              <p>Keep your account and public details current.</p>
+            </div>
+            <div className="bf-dash-profile-header-actions">
+              {/* {isFreelancer && 
+                <Link href={`/freelancers/${user._id}`} className="bf-dash-btn ghost">
+                  Preview profile 
+                  <ArrowUpRight size={15} />
+                </Link>
+              } */}
+              <span className="bf-dash-completion">{profileCompletion}% complete</span>
+            </div>
+          </div>
           <div className="bf-dash-form-grid">
             {profileField('Full name', 'name', { placeholder: 'Your name' })}
             {profileField('Phone', 'phone', { placeholder: 'Phone number' })}
